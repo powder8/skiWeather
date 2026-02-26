@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sol Mountain Backcountry Ski Trip — March 1–7, 2026</title>
+<style>
+  :root {
+    --bg: #0f1724; --card-bg: #1a2332; --card-hover: #1f2b3d;
+    --accent: #4fa3d1; --accent-light: #7ec4e8;
+    --text: #e2e8f0; --text-muted: #8899aa;
+    --danger-high: #e53e3e; --danger-considerable: #ed8936; --danger-moderate: #ecc94b;
+    --snow: #b8d4e8; --border: #2d3a4d; --green: #48bb78;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
+  header { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  header h1 { font-size: 1.75rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
+  .dates { font-size: 1.1rem; color: var(--accent-light); font-weight: 500; }
+  .location-info { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.5; }
+  .avy-banner {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    margin-top: 1rem; padding: 0.6rem 1.2rem;
+    border-radius: 8px; font-size: 0.9rem; font-weight: 600;
+  }
+  .avy-banner a { text-decoration: underline; text-underline-offset: 2px; }
+  .avy-banner a:hover { color: #fff; }
+  .avy-dot { width: 10px; height: 10px; border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .trip-overview {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.88rem;
+    color: var(--text-muted); line-height: 1.7;
+  }
+  .trip-overview strong { color: var(--text); }
+  .day-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    margin-bottom: 0.75rem; overflow: hidden; transition: border-color 0.2s; cursor: pointer;
+  }
+  .day-card:hover { border-color: var(--accent); }
+  .day-card.expanded { border-color: var(--accent); }
+  .day-summary {
+    display: grid; grid-template-columns: 7.5rem 3rem 1fr auto;
+    align-items: center; gap: 0.75rem; padding: 0.9rem 1.25rem; user-select: none;
+  }
+  .day-date { font-weight: 600; font-size: 0.95rem; color: #fff; line-height: 1.3; }
+  .day-date small { display: block; font-weight: 400; font-size: 0.78rem; color: var(--text-muted); }
+  .weather-icon { font-size: 1.5rem; text-align: center; line-height: 1; }
+  .day-info { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-size: 0.85rem; }
+  .day-info .info-item { display: flex; align-items: center; gap: 0.3rem; }
+  .info-label { color: var(--text-muted); font-size: 0.78rem; }
+  .info-value { font-weight: 500; }
+  .info-value.snow-value { color: var(--snow); }
+  .info-value.temp-value { color: var(--accent-light); }
+  .day-oneliner { font-size: 0.82rem; color: var(--text-muted); text-align: right; min-width: 0; white-space: nowrap; }
+  .expand-arrow { color: var(--text-muted); font-size: 0.7rem; transition: transform 0.2s; margin-left: 0.5rem; flex-shrink: 0; }
+  .day-card.expanded .expand-arrow { transform: rotate(180deg); }
+  .day-detail { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
+  .day-card.expanded .day-detail { display: block; }
+  .detail-section { margin-top: 1rem; }
+  .detail-section h3 {
+    font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--accent); margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+  }
+  .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .detail-cell { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0.6rem 0.75rem; font-size: 0.82rem; }
+  .detail-cell .cell-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
+  .detail-cell .cell-value { font-weight: 500; color: var(--text); line-height: 1.4; }
+  .detail-text { font-size: 0.85rem; color: var(--text); line-height: 1.6; }
+  .detail-text p { margin-bottom: 0.4rem; }
+  .backcountry-note { background: rgba(72,187,120,0.08); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; font-size: 0.84rem; line-height: 1.6; }
+  .avy-note { background: rgba(237,137,54,0.08); border-left: 3px solid var(--danger-considerable); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; font-size: 0.84rem; line-height: 1.6; }
+  .snowpack-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-top: 1.5rem; }
+  .snowpack-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
+  .snowpack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+  .snowpack-item { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0.75rem; }
+  .snowpack-item .sp-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .snowpack-item .sp-value { font-size: 0.95rem; font-weight: 600; margin-top: 0.2rem; }
+  .snowpack-text { font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }
+  .snowpack-text li { margin-bottom: 0.3rem; }
+  footer { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
+  footer h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
+  .link-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
+  .link-item {
+    display: block; padding: 0.6rem 0.9rem; background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--accent-light); text-decoration: none; font-size: 0.85rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .link-item:hover { border-color: var(--accent); background: var(--card-hover); }
+  .link-item small { display: block; color: var(--text-muted); font-size: 0.75rem; margin-top: 0.15rem; }
+  .last-updated { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 1rem; padding-bottom: 1rem; }
+  .auto-note { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic; }
+  @media (max-width: 640px) {
+    .container { padding: 1rem 0.75rem; }
+    header h1 { font-size: 1.35rem; }
+    .day-summary { grid-template-columns: 1fr; gap: 0.4rem; padding: 0.75rem 1rem; position: relative; }
+    .day-date { display: flex; align-items: center; gap: 0.75rem; }
+    .day-date small { display: inline; }
+    .weather-icon { position: absolute; right: 1rem; font-size: 1.3rem; }
+    .day-oneliner { text-align: left; white-space: normal; }
+    .detail-grid { grid-template-columns: 1fr; }
+    .link-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Sol Mountain Backcountry Ski Trip</h1>
+    <div class="dates">March 1 \u2013 7, 2026</div>
+    <div class="location-info">
+      Monashee Mountains, ~50km north of Revelstoke, BC<br>
+      Lodge at ~1900m \u00B7 Skiing to ~2500m
+    </div>
+    <div class="avy-banner" style="border: 1px solid var(--danger-high)40; background: var(--danger-high)15; color: var(--danger-high);">
+      <span class="avy-dot" style="background: var(--danger-high)"></span>
+      Avalanche Danger: 4 - High &nbsp;
+      <a href="https://avalanche.ca/forecasts/5289796d-f82e-49ed-9f4e-0a39a91529aa_ba5441f7805bb1c20e9ffea2010f2b1e3986793dcc3827f5e240ccaa19ce1b4e" target="_blank" rel="noopener" style="color: var(--danger-high)">Details</a>
+    </div>
+  </header>
+
+  <div class="trip-overview"><strong>Week outlook:</strong> 1 clear day, 2 days with snowfall. Mountain temps range -18 to 6°C. Total expected snowfall: ~4cm. Best days for big objectives: Sun, Mar 1.</div>
+
+  <div id="cards"></div>
+
+  
+    <div class="snowpack-section">
+      <h2>Avalanche Forecast — Badshot-Battle-Central Selkirk-Esplanade-Goat-Gold-Jordan-North Monashee-North Selkirk-Retallack-West Purcell</h2>
+      <div class="snowpack-grid">
+        <div class="snowpack-item"><div class="sp-label">Thursday</div><div class="sp-value" style="font-size:0.85rem">Alp: 4 - High<br>TL: 4 - High<br>BTL: 4 - High</div></div>
+        <div class="snowpack-item"><div class="sp-label">Friday</div><div class="sp-value" style="font-size:0.85rem">Alp: 3 - Considerable<br>TL: 3 - Considerable<br>BTL: 3 - Considerable</div></div>
+        <div class="snowpack-item"><div class="sp-label">Saturday</div><div class="sp-value" style="font-size:0.85rem">Alp: 3 - Considerable<br>TL: 3 - Considerable<br>BTL: 3 - Considerable</div></div>
+      </div>
+      <div style="margin-top:0.75rem"><h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">Avalanche Summary</h3><div class="snowpack-text">Poor visibility restricted field observationson Wednesday. On Tuesday, evidence of a natural cycle was observed with numerous natural storm slabs and very large persistent slabs (size 1.5 to 3), some running full path.Human-triggered persistent slabs keep being reported, with some being triggered accidentally or remotely (from a distance), were reported on all aspects and elevations.A natural avalanche cycle is likely with the incoming weather.</div></div>
+      <div style="margin-top:0.75rem"><h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">Snowpack Summary</h3><div class="snowpack-text">Daily light snowfall is bringing the totals to 25 to 50 cm of recent snow since Monday, combined with moderate to strong westerly wind.Three persistent weak layers of concern may be found in the upper 150 cm of the snowpack:45 to 60+ cm down is a layer of surface hoar in sheltered areas, or a melt-freeze crust on sun-exposed slopes from mid-February.60 to 100+ cm down is the early-February layer of surface hoar in wind-sheltered terrain and a crust on sun-exposed slopes.80 to 120 cm down is the late-January layer of surface hoar and facets over a melt-freeze crust.All of these persistent layers have continued to produce large avalanches in the region.The remainder of the snowpack below is well consolidated.</div></div>
+      <div style="margin-top:0.75rem"><h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">Weather Summary</h3><div class="snowpack-text">Wednesday NightCloudy. 10 to 25 cm of snow. 60 km/h soutwest ridgetop wind. Treeline temperature -7 °C.ThursdayCloudy. 10 to 20 cm of snow. 60 km/h southwest ridgetop wind. Treeline temperature -6 °C. Freezing level 1500 m.FridayCloudy. 15 to 20 cm of snow. 50 km/h west ridgetop wind. Treeline temperature -6 °C.SaturdayA mix of sun and clouds. 40 km/h west ridgetop wind. Treeline temperature -7 °C. More details can be found in the Mountain Weather Forecast.</div></div>
+      <div style="margin-top:0.75rem"><h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">Avalanche Problems</h3>
+        <div class="avy-note" style="margin-bottom:0.5rem"><strong>Storm slab</strong> — Likelihood: veryLikely_likely, Size: 1.0-2.5<br>Elevations: Treeline, Alpine, Below Treeline | Aspects: Northeast, East, s, West, Southeast, Southwest, Northwest, North<br>Additional snow, combined with strong wind, will keep building new reactive storm and wind slabs. Storm slabs in motion may step down to deeper layers resulting in large avalanches.</div>
+        <div class="avy-note" style="margin-bottom:0.5rem"><strong>Persistent slab</strong> — Likelihood: likely, Size: 1.0-3.0<br>Elevations: Alpine, Below Treeline, Treeline | Aspects: North, Southeast, Southwest, West, Northeast, East, s, Northwest<br>Three problematic persistent weak layers exist in the upper 150 cm of the snowpack. These layers continue to surprise people with instances of remote triggering and releasing on low angle slopes in unexpected areas.</div>
+      </div>
+      <div style="margin-top:0.75rem"><h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">Travel Advice</h3><ul class="snowpack-text">
+        <li>Avoid exposure to overhead avalanche terrain; avalanches may run surprisingly far.</li>
+        <li>Avoid avalanche terrain during periods of heavy loading from new snow, wind, or rain.</li>
+        <li>Any travel under High danger should exclusively be in flat or gentle terrain, far away from any overhead hazard.</li>
+        <li>Be aware of the potential for larger than expected storm slabs due to buried surface hoar.</li>
+      </ul></div>
+    </div>
+
+  <footer>
+    <h2>Live Data Sources</h2>
+    <div class="link-grid">
+      <a class="link-item" href="https://avalanche.ca/forecasts/5289796d-f82e-49ed-9f4e-0a39a91529aa_ba5441f7805bb1c20e9ffea2010f2b1e3986793dcc3827f5e240ccaa19ce1b4e" target="_blank" rel="noopener">
+        Avalanche Canada \u2014 Badshot-Battle-Central Selkirk-Esplanade-Goat-Gold-Jordan-North Monashee-North Selkirk-Retallack-West Purcell
+        <small>Daily danger ratings &amp; snowpack analysis</small>
+      </a>
+      <a class="link-item" href="https://www.snow-forecast.com/resorts/Sol-Mountain-Touring/6day/mid" target="_blank" rel="noopener">
+        Snow-Forecast \u2014 Sol Mountain
+        <small>6-day mountain forecast</small>
+      </a>
+      <a class="link-item" href="https://weather.gc.ca/city/pages/bc-65_metric_e.html" target="_blank" rel="noopener">
+        Environment Canada \u2014 Revelstoke
+        <small>Official valley forecast</small>
+      </a>
+      <a class="link-item" href="https://aviationweather.gov/api/data/metar?ids=CYRV&format=decoded" target="_blank" rel="noopener">
+        CYRV Aviation METAR
+        <small>Revelstoke airport obs</small>
+      </a>
+      <a class="link-item" href="https://solmountain.com/conditions/" target="_blank" rel="noopener">
+        Sol Mountain Lodge \u2014 Conditions
+        <small>Current snowpack &amp; terrain report</small>
+      </a>
+      <a class="link-item" href="https://open-meteo.com/" target="_blank" rel="noopener">
+        Open-Meteo API
+        <small>Mountain &amp; valley forecast data source</small>
+      </a>
+    </div>
+    <div class="last-updated">Last updated: February 26, 2026 at 15:47</div>
+    <div class="auto-note">Auto-generated from live APIs. Always verify with primary sources before making terrain decisions.</div>
+  </footer>
+</div>
+
+<script>
+const days = [{"date": "Sun, Mar 1", "dayOfWeek": "Sunday", "icon": "☁️", "mtHigh": "-2", "mtLow": "-8", "valHigh": "4", "valLow": "-14", "snow": "None", "wind": "6 km/h E", "summary": "Overcast", "freezing": "1592m", "am": {"temp": "-8°C", "wind": "4 km/h NE", "snow": "0cm", "sky": "Clear sky"}, "pm": {"temp": "-3°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Mainly clear"}, "night": {"temp": "-3°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Overcast"}, "valley": "Sunny. High 7. Clear. Low minus 2.", "metar": "CYRV (2026-02-26T23:16:00 UTC): — FEW at 400ft, OVC at 7100ft — vis 14.5km — wind N 9 km/h — QNH 1010.6 hPa — wx: -RA", "backcountry": "Excellent visibility for alpine objectives. Good day for bigger terrain. No new snow. Look for wind-sheltered aspects where soft snow remains.", "avyNote": "Avalanche Canada danger: Alpine 3 - Considerable, Treeline 3 - Considerable, Below treeline 3 - Considerable. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel."}, {"date": "Mon, Mar 2", "dayOfWeek": "Monday", "icon": "☁️", "mtHigh": "4", "mtLow": "-5", "valHigh": "5", "valLow": "-13", "snow": "None", "wind": "7 km/h SE", "summary": "Overcast", "freezing": "2515m", "am": {"temp": "-4°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Partly cloudy"}, "pm": {"temp": "2°C", "wind": "7 km/h SE", "snow": "0cm", "sky": "Partly cloudy"}, "night": {"temp": "0°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Partly cloudy"}, "valley": "Sunny. High 7. Cloudy with 40 percent chance of rain showers or flurries. Low minus 2.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. No new snow. Look for wind-sheltered aspects where soft snow remains. Warm temps — watch for wet loose on steep south-facing terrain in afternoon. Start early.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel."}, {"date": "Tue, Mar 3", "dayOfWeek": "Tuesday", "icon": "☁️", "mtHigh": "6", "mtLow": "-3", "valHigh": "6", "valLow": "-1", "snow": "None", "wind": "9 km/h SE", "summary": "Overcast", "freezing": "2823m", "am": {"temp": "-3°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Mainly clear"}, "pm": {"temp": "5°C", "wind": "9 km/h SE", "snow": "0cm", "sky": "Overcast"}, "night": {"temp": "2°C", "wind": "9 km/h E", "snow": "0cm", "sky": "Overcast"}, "valley": "Cloudy with 40 percent chance of flurries or rain showers. High 6. Rain or snow. Low zero.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. No new snow. Look for wind-sheltered aspects where soft snow remains. Warm temps — watch for wet loose on steep south-facing terrain in afternoon. Start early.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel."}, {"date": "Wed, Mar 4", "dayOfWeek": "Wednesday", "icon": "🌨️", "mtHigh": "1", "mtLow": "-2", "valHigh": "6", "valLow": "-1", "snow": "1.9cm", "wind": "6 km/h S", "summary": "Light snow showers, 1.9cm snow", "freezing": "2054m", "am": {"temp": "-2°C", "wind": "6 km/h SE", "snow": "0.8cm", "sky": "Light snow"}, "pm": {"temp": "1°C", "wind": "6 km/h S", "snow": "0.1cm", "sky": "Light snow showers"}, "night": {"temp": "0°C", "wind": "4 km/h SW", "snow": "0.1cm", "sky": "Light snow showers"}, "valley": "Periods of snow or rain. High plus 5.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Light snow (1.9cm). Existing surfaces refreshed.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel."}, {"date": "Thu, Mar 5", "dayOfWeek": "Thursday", "icon": "🌨️", "mtHigh": "1", "mtLow": "-5", "valHigh": "7", "valLow": "1", "snow": "0.5cm", "wind": "10 km/h SW", "summary": "Light snow showers, 0.5cm snow", "freezing": "2054m", "am": {"temp": "-2°C", "wind": "4 km/h W", "snow": "0cm", "sky": "Light snow showers"}, "pm": {"temp": "-1°C", "wind": "8 km/h SW", "snow": "0.1cm", "sky": "Light snow showers"}, "night": {"temp": "-4°C", "wind": "10 km/h S", "snow": "0.4cm", "sky": "Light snow"}, "valley": "Valley: 7/1°C, Light snow", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Light snow (0.5cm). Existing surfaces refreshed.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel."}, {"date": "Fri, Mar 6", "dayOfWeek": "Friday", "icon": "🌨️", "mtHigh": "-4", "mtLow": "-16", "valHigh": "5", "valLow": "-8", "snow": "1.8cm", "wind": "12 km/h SW", "summary": "Light snow showers, 1.8cm snow", "freezing": "1285m", "am": {"temp": "-5°C", "wind": "11 km/h SW", "snow": "0.8cm", "sky": "Light snow showers"}, "pm": {"temp": "-5°C", "wind": "12 km/h W", "snow": "0.3cm", "sky": "Light snow showers"}, "night": {"temp": "-14°C", "wind": "6 km/h NW", "snow": "0cm", "sky": "Fog"}, "valley": "Periods of rain. Snow level rising to 1000 metres in the morning. Amount 5 to 10 mm. Wind becoming west 20 km/h gusting to 40 in the afternoon. High plus 5. UV index 1 or low. Wet flurries and rain showers ending after midnight then cloudy with 30 percent chance of flurries. Becoming partly cloudy before morning. Local snowfall amount 2 cm. Wind northwest 20 km/h gusting to 40 becoming light near midnight. Low zero.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Light snow (1.8cm). Existing surfaces refreshed.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel."}, {"date": "Sat, Mar 7", "dayOfWeek": "Saturday", "icon": "☁️", "mtHigh": "-6", "mtLow": "-18", "valHigh": "4", "valLow": "-9", "snow": "None", "wind": "8 km/h N", "summary": "Overcast", "freezing": "977m", "am": {"temp": "-13°C", "wind": "8 km/h W", "snow": "0cm", "sky": "Overcast"}, "pm": {"temp": "-7°C", "wind": "8 km/h W", "snow": "0cm", "sky": "Overcast"}, "night": {"temp": "-16°C", "wind": "8 km/h NE", "snow": "0cm", "sky": "Partly cloudy"}, "valley": "A mix of sun and cloud. High 6. Clear. Low minus 4.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. No new snow. Look for wind-sheltered aspects where soft snow remains.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel."}];
+
+function renderCards() {
+  var c = document.getElementById("cards");
+  c.innerHTML = days.map(function(d, i) {
+    function pc(label, p) {
+      if (!p) return '<div class="detail-cell"><div class="cell-label">'+label+'</div><div class="cell-value">No data</div></div>';
+      return '<div class="detail-cell"><div class="cell-label">'+label+'</div><div class="cell-value">'
+        +p.sky+'<br>'+p.temp+', Wind '+p.wind+'<br>Snow: '+p.snow+'</div></div>';
+    }
+    return '<div class="day-card" onclick="toggle(this)">'
+      +'<div class="day-summary">'
+      +'<div class="day-date">'+d.date+'<small>'+d.dayOfWeek+'</small></div>'
+      +'<div class="weather-icon">'+d.icon+'</div>'
+      +'<div class="day-info">'
+      +'<div class="info-item"><span class="info-label">Mtn</span><span class="info-value temp-value">'+d.mtLow+' / '+d.mtHigh+'\u00B0C</span></div>'
+      +'<div class="info-item"><span class="info-label">Valley</span><span class="info-value">'+d.valLow+' / '+d.valHigh+'\u00B0C</span></div>'
+      +'<div class="info-item"><span class="info-label">Snow</span><span class="info-value snow-value">'+d.snow+'</span></div>'
+      +'<div class="info-item"><span class="info-label">Wind</span><span class="info-value">'+d.wind+'</span></div>'
+      +'</div>'
+      +'<div class="day-oneliner">'+d.summary+'<span class="expand-arrow">\u25BC</span></div>'
+      +'</div>'
+      +'<div class="day-detail">'
+      +'<div class="detail-section"><h3>Mountain Forecast (1900m)</h3>'
+      +'<div class="detail-grid">'+pc('Morning',d.am)+pc('Afternoon',d.pm)+pc('Night',d.night)+'</div>'
+      +'<div style="margin-top:0.4rem;font-size:0.82rem;color:var(--text-muted)">Freezing level: '+d.freezing+'</div></div>'
+      +'<div class="detail-section"><h3>Valley Forecast (Revelstoke)</h3><div class="detail-text"><p>'+d.valley+'</p></div></div>'
+      +'<div class="detail-section"><h3>Aviation Weather (CYRV)</h3><div class="detail-text"><p>'+d.metar+'</p></div></div>'
+      +'<div class="detail-section"><h3>Backcountry Notes</h3><div class="backcountry-note">'+d.backcountry+'</div></div>'
+      +'<div class="detail-section"><h3>Avalanche Considerations</h3><div class="avy-note">'+d.avyNote+'</div></div>'
+      +'</div></div>';
+  }).join("");
+}
+function toggle(card) { card.classList.toggle("expanded"); }
+renderCards();
+</script>
+</body>
+</html>

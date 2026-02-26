@@ -1,0 +1,27 @@
+name: Update Forecast
+
+on:
+  schedule:
+    # Run daily at 6 AM and 4 PM Pacific (14:00 and 00:00 UTC)
+    - cron: '0 14 * * *'
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Manual trigger from GitHub UI
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch forecasts and rebuild page
+        run: python3 build.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add index.html data.json
+          git diff --staged --quiet || git commit -m "Update forecast $(date -u +%Y-%m-%dT%H:%M)"
+          git push

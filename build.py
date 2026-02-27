@@ -28,7 +28,7 @@ except Exception:
 
 DIR = Path(__file__).parent
 CONFIG = {
-    "mountain": {"lat": 51.35, "lon": -117.95, "elev": 1900, "name": "Sol Mountain (1900m)"},
+    "mountain": {"lat": 50.45, "lon": -118.19, "elev": 1900, "name": "Sol Mountain (1900m)"},
     "valley": {"lat": 50.998, "lon": -118.195, "elev": 443, "name": "Revelstoke (443m)"},
     "trip_start": "2026-03-01",
     "trip_end": "2026-03-07",
@@ -1588,7 +1588,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     <h1>Sol Mountain Backcountry Ski Trip</h1>
     <div class="dates">March 1 &ndash; 7, 2026</div>
     <div class="location-info">
-      Monashee Mountains, ~50km north of Revelstoke, BC<br>
+      Monashee Mountains, ~60km south of Revelstoke, BC<br>
       Lodge at ~1900m &middot; Skiing to ~2500m
     </div>
     <div class="avy-banner" style="border: 1px solid {banner['color']}40; background: {banner['color']}15; color: {banner['color']};">

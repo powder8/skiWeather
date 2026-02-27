@@ -217,6 +217,51 @@ def parse_ec_xml(xml_text):
     return forecasts
 
 
+MODEL_KEYS = [
+    ("gem_hrdps_continental", "HRDPS"),
+    ("gem_seamless", "GDPS"),
+    ("gfs_seamless", "GFS"),
+    ("ecmwf_ifs025", "ECMWF"),
+    ("icon_seamless", "ICON"),
+]
+MODEL_LABELS = [label for _, label in MODEL_KEYS]
+
+
+def fetch_multi_model_snowfall():
+    """Fetch daily snowfall predictions from 5 weather models via Open-Meteo."""
+    lat = CONFIG["mountain"]["lat"]
+    lon = CONFIG["mountain"]["lon"]
+    elev = CONFIG["mountain"]["elev"]
+    models_param = ",".join(k for k, _ in MODEL_KEYS)
+    url = (
+        f"https://api.open-meteo.com/v1/forecast"
+        f"?latitude={lat}&longitude={lon}"
+        f"&daily=snowfall_sum"
+        f"&models={models_param}"
+        f"&elevation={elev}"
+        f"&timezone=America%2FVancouver&forecast_days=16"
+    )
+    print("  Fetching multi-model snowfall...")
+    data = fetch_json(url)
+
+    result = {}
+    daily = data.get("daily", {})
+    times = daily.get("time", [])
+
+    for i, date_str in enumerate(times):
+        day_models = {}
+        for model_key, label in MODEL_KEYS:
+            col = f"snowfall_sum_{model_key}"
+            if col in daily and i < len(daily[col]):
+                val = daily[col][i]
+                day_models[label] = round(val, 1) if val is not None else None
+            else:
+                day_models[label] = None
+        result[date_str] = day_models
+
+    return result
+
+
 # ─── Data Processing ────────────────────────────────────────────────────────
 
 def extract_hourly_period(hourly, date_str, start_h, end_h):
@@ -249,7 +294,7 @@ def extract_hourly_period(hourly, date_str, start_h, end_h):
     }
 
 
-def process_day(date_str, mtn_data, val_data):
+def process_day(date_str, mtn_data, val_data, multi_model=None):
     try:
         day_idx = mtn_data["daily"]["time"].index(date_str)
     except ValueError:
@@ -286,6 +331,11 @@ def process_day(date_str, mtn_data, val_data):
     avg_cloud = all_day["cloud_avg"] if all_day else 50
     fl = freezing_level(mtn["high"], CONFIG["mountain"]["elev"])
 
+    # Multi-model snowfall for this day
+    model_snow = {}
+    if multi_model and date_str in multi_model:
+        model_snow = multi_model[date_str]
+
     desc, icon = wmo_info(mtn["weather_code"])
     return {
         "date": date_str,
@@ -298,6 +348,7 @@ def process_day(date_str, mtn_data, val_data):
         "am": am, "pm": pm, "night": night,
         "avg_cloud": avg_cloud,
         "freezing_level": fl,
+        "model_snow": model_snow,
     }
 
 
@@ -310,13 +361,30 @@ def gen_summary(day):
     return ", ".join(parts)
 
 
+def lee_aspects(wind_dir):
+    """Return aspects that are lee (loaded) given a wind direction compass string."""
+    opposites = {
+        "N": ["S", "SE", "SW"], "NE": ["SW", "S", "W"], "E": ["W", "NW", "SW"],
+        "SE": ["NW", "N", "W"], "S": ["N", "NE", "NW"], "SW": ["NE", "N", "E"],
+        "W": ["E", "NE", "SE"], "NW": ["SE", "S", "E"],
+    }
+    return opposites.get(wind_dir, [])
+
+
+def solar_aspects(wind_dir):
+    """Return aspects favoured by solar warming (south-facing family)."""
+    return ["S", "SE", "SW"]
+
+
 def gen_backcountry(day):
     notes = []
     cloud = day["avg_cloud"]
     snow = day["mountain"]["snow"]
     wind = day["mountain"]["wind_max"]
+    wind_dir = day["mountain"]["wind_dir"]
     high = day["mountain"]["high"]
 
+    # --- Visibility & Conditions ---
     if cloud < 30:
         notes.append("Excellent visibility for alpine objectives. Good day for bigger terrain.")
     elif cloud > 80:
@@ -334,12 +402,65 @@ def gen_backcountry(day):
         notes.append("No new snow. Look for wind-sheltered aspects where soft snow remains.")
 
     if wind > 25:
-        notes.append(f"Strong winds ({wind} km/h {day['mountain']['wind_dir']}) \u2014 significant wind effect at ridgeline.")
+        notes.append(f"Strong winds ({wind} km/h {wind_dir}) \u2014 significant wind effect at ridgeline.")
     elif wind > 15:
-        notes.append(f"Moderate winds ({wind} km/h {day['mountain']['wind_dir']}) \u2014 some wind loading on lee features.")
+        notes.append(f"Moderate winds ({wind} km/h {wind_dir}) \u2014 some wind loading on lee features.")
 
     if high > 2:
         notes.append("Warm temps \u2014 watch for wet loose on steep south-facing terrain in afternoon. Start early.")
+
+    # --- Aspect Guidance ---
+    lee = lee_aspects(wind_dir)
+    if wind > 15 and lee:
+        notes.append(f"<br><strong>Aspect:</strong> Avoid {', '.join(lee)} aspects (lee loading from {wind_dir} winds).")
+        safe = [a for a in ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] if a not in lee]
+        if safe:
+            notes.append(f"Favour {', '.join(safe[:3])} aspects for wind-sheltered skiing.")
+    elif wind <= 15:
+        notes.append("<br><strong>Aspect:</strong> Light winds \u2014 all aspects reasonable.")
+    if high > 0:
+        notes.append("South-facing aspects will soften in afternoon sun; ski early or late for best snow.")
+
+    # --- Elevation Band ---
+    notes.append("<br><strong>Elevation band:</strong>")
+    if cloud > 70 or snow > 10:
+        notes.append("Alpine: Poor visibility likely \u2014 limited value above treeline.")
+    elif wind > 25:
+        notes.append("Alpine: Wind-affected \u2014 exposed ridges hazardous.")
+    else:
+        notes.append("Alpine: Good conditions for above-treeline objectives.")
+
+    if cloud > 80 and snow > 5:
+        notes.append("Treeline: Flat light but manageable with terrain features for reference.")
+    else:
+        notes.append("Treeline: Good zone for varied terrain.")
+
+    notes.append("Below treeline: Protected skiing with good visibility in trees.")
+
+    # --- Terrain Type ---
+    notes.append("<br><strong>Terrain:</strong>")
+    if snow > 10 and wind < 20:
+        notes.append("Open bowls will have deep fresh snow \u2014 excellent powder potential in sheltered bowls.")
+    elif snow > 10 and wind > 20:
+        notes.append("Open bowls wind-affected \u2014 favour gladed trees for better snow quality.")
+    elif wind > 25:
+        notes.append("Ridgelines exposed and scoured. Gladed trees offer best skiing.")
+    elif cloud < 40:
+        notes.append("Clear skies suit open terrain and ridge tours with big views.")
+    else:
+        notes.append("Mixed terrain works well. Gladed trees offer variety and wind protection.")
+
+    # --- Timing ---
+    notes.append("<br><strong>Timing:</strong>")
+    if high > 2:
+        notes.append("Start early (before 9am departure). South aspects will deteriorate by early afternoon. Plan to be off steep solar aspects by 1pm.")
+    elif snow > 10:
+        notes.append("Storm day \u2014 no rush for early start. Best skiing once snowfall eases. Watch for natural avalanche cycle during/after heavy loading.")
+    else:
+        notes.append("Normal timing. Morning starts offer best snow surfaces before any afternoon warming.")
+
+    # --- Sol Mountain Context ---
+    notes.append("<br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately \u2014 discuss objectives at breakfast briefing.")
 
     return " ".join(notes)
 
@@ -373,24 +494,257 @@ def gen_avy_notes(day, avy_data):
     return " ".join(notes)
 
 
-def gen_week_outlook(days):
+def gen_multi_model_table(days, multi_model):
+    """Generate HTML for the multi-model snowfall comparison table."""
+    if not multi_model or not days:
+        return ""
+
+    def snow_color(val):
+        if val is None or val == 0:
+            return "color: var(--text-muted)"
+        elif val < 5:
+            return "color: #7ec4e8"
+        elif val <= 15:
+            return "color: #4fa3d1; font-weight: 600"
+        else:
+            return "color: #48bb78; font-weight: 700"
+
+    rows = []
+    cumulative = {label: 0.0 for label in MODEL_LABELS}
+
+    for d in days:
+        date_str = d["date"]
+        models = multi_model.get(date_str, {})
+        vals = [models.get(label) for label in MODEL_LABELS]
+        valid = [v for v in vals if v is not None]
+        mean = round(sum(valid) / len(valid), 1) if valid else 0
+        spread = round(max(valid) - min(valid), 1) if len(valid) > 1 else 0
+
+        if spread < 3:
+            conf = '<span style="color: var(--green)">High</span>'
+        elif spread < 10:
+            conf = '<span style="color: var(--danger-moderate)">Mod</span>'
+        else:
+            conf = '<span style="color: var(--danger-high)">Low</span>'
+
+        cells = f'<td class="mm-date">{html_esc(d["date_fmt"])}</td>'
+        for label in MODEL_LABELS:
+            v = models.get(label)
+            display = f"{v}" if v is not None else "--"
+            style = snow_color(v)
+            cells += f'<td style="{style}">{display}</td>'
+            if v is not None:
+                cumulative[label] += v
+        cells += f'<td style="{snow_color(mean)}"><strong>{mean}</strong></td>'
+        cells += f'<td>{conf} <span style="color:var(--text-muted);font-size:0.75rem">(\u00B1{spread})</span></td>'
+        rows.append(f"<tr>{cells}</tr>")
+
+    # Cumulative totals row
+    cum_cells = '<td class="mm-date"><strong>Total</strong></td>'
+    all_totals = []
+    for label in MODEL_LABELS:
+        t = round(cumulative[label], 1)
+        all_totals.append(t)
+        cum_cells += f'<td style="{snow_color(t)}"><strong>{t}</strong></td>'
+    cum_mean = round(sum(all_totals) / len(all_totals), 1) if all_totals else 0
+    cum_spread = round(max(all_totals) - min(all_totals), 1) if len(all_totals) > 1 else 0
+    cum_cells += f'<td style="{snow_color(cum_mean)}"><strong>{cum_mean}</strong></td>'
+    cum_cells += f'<td><span style="color:var(--text-muted)">\u00B1{cum_spread}</span></td>'
+    rows.append(f'<tr class="mm-total">{cum_cells}</tr>')
+
+    header = "<tr><th>Date</th>"
+    for label in MODEL_LABELS:
+        header += f"<th>{label}</th>"
+    header += "<th>Mean</th><th>Confidence</th></tr>"
+
+    return f'''
+    <div class="multi-model-section">
+      <h2>Multi-Model Snowfall Comparison (cm)</h2>
+      <div class="mm-table-wrap">
+        <table class="mm-table">
+          <thead>{header}</thead>
+          <tbody>{"".join(rows)}</tbody>
+        </table>
+      </div>
+      <div class="mm-legend">
+        <strong>Models:</strong>
+        HRDPS = Canadian high-res 2.5km (best for BC mountains) &middot;
+        GDPS = Canadian global &middot;
+        GFS = US global &middot;
+        ECMWF = European &middot;
+        ICON = German.
+        Confidence: High (spread &lt;3cm), Moderate (&lt;10cm), Low (&gt;10cm).
+      </div>
+    </div>'''
+
+
+def gen_snowpack_evolution(days, multi_model=None):
+    """Generate a narrative about how forecast weather affects snowpack stability."""
+    parts = []
+    total_snow = sum(d["mountain"]["snow"] for d in days)
+    heavy_days = [d for d in days if d["mountain"]["snow"] > 10]
+    warm_days = [d for d in days if d["mountain"]["high"] > 0]
+    windy_days = [d for d in days if d["mountain"]["wind_max"] > 20]
+
+    if not days:
+        return ""
+
+    parts.append("<strong>Snowpack Evolution Through the Week:</strong>")
+
+    # Phase analysis
+    phases = []
+    for d in days:
+        snow = d["mountain"]["snow"]
+        wind = d["mountain"]["wind_max"]
+        high = d["mountain"]["high"]
+        if snow > 10:
+            phases.append((d["date_fmt"], "heavy_load"))
+        elif snow > 3:
+            phases.append((d["date_fmt"], "light_load"))
+        elif high > 0 and snow < 1:
+            phases.append((d["date_fmt"], "settlement"))
+        else:
+            phases.append((d["date_fmt"], "stable"))
+
+    loading_days = [p[0] for p in phases if "load" in p[1]]
+    settle_days = [p[0] for p in phases if p[1] == "settlement"]
+
+    if loading_days:
+        parts.append(f"New snow loading on {', '.join(loading_days)} will add stress to existing weak layers.")
+    if settle_days:
+        parts.append(f"Warmer temps on {', '.join(settle_days)} will promote settlement and bonding of recent snow.")
+
+    if heavy_days:
+        parts.append("Significant storm loading increases storm slab and deep slab concern. "
+                      "Allow 24-48 hours after heavy loading for natural avalanche cycle to run and snowpack to adjust.")
+
+    if windy_days:
+        wind_dates = ", ".join(d["date_fmt"] for d in windy_days)
+        parts.append(f"Wind events ({wind_dates}) will create reactive wind slabs on lee features. "
+                      "These can persist for 1-2 days after winds ease.")
+
+    # Persistent layers note
+    parts.append("The Feb 13 surface hoar and Jan 28 crust/facet layers remain buried in the snowpack. "
+                  "New load from storm cycles may reactivate these interfaces, particularly on steep north-facing terrain above treeline. "
+                  "Monitor Avalanche Canada bulletins daily for updated assessments.")
+
+    return "<br>".join(parts)
+
+
+def gen_week_outlook(days, multi_model=None):
+    if not days:
+        return "<strong>No forecast data available.</strong>"
+
     total_snow = sum(d["mountain"]["snow"] for d in days)
     clear_days = sum(1 for d in days if d["avg_cloud"] < 40)
     snow_days = sum(1 for d in days if d["mountain"]["snow"] > 1)
     temp_high = max(d["mountain"]["high"] for d in days)
     temp_low = min(d["mountain"]["low"] for d in days)
 
-    parts = [f"<strong>Week outlook:</strong> {clear_days} clear day{'s' if clear_days != 1 else ''}, "
-             f"{snow_days} day{'s' if snow_days != 1 else ''} with snowfall."]
-    parts.append(f"Mountain temps range {temp_low} to {temp_high}\u00B0C.")
-    if total_snow > 0:
-        parts.append(f"Total expected snowfall: ~{round(total_snow)}cm.")
+    sections = []
 
-    best = [d["date_fmt"] for d in days if d["avg_cloud"] < 50 and d["mountain"]["wind_max"] < 15]
+    # --- Weather Pattern ---
+    pattern_parts = []
+    for d in days:
+        code = d["mountain"]["weather_code"]
+        if code >= 71:
+            pattern_parts.append("snow")
+        elif code >= 61:
+            pattern_parts.append("rain")
+        elif code >= 45:
+            pattern_parts.append("fog")
+        elif code >= 2:
+            pattern_parts.append("cloud")
+        else:
+            pattern_parts.append("clear")
+    # Simplify to transitions
+    transitions = [pattern_parts[0]]
+    for p in pattern_parts[1:]:
+        if p != transitions[-1]:
+            transitions.append(p)
+    pattern_map = {"clear": "clear skies", "cloud": "cloud cover", "snow": "snowfall",
+                   "rain": "rain", "fog": "fog/low cloud"}
+    pattern_str = " \u2192 ".join(pattern_map.get(t, t) for t in transitions)
+    sections.append(f"<strong>Weather pattern:</strong> {pattern_str}.")
+
+    # --- Multi-model Snowfall Range ---
+    if multi_model:
+        model_totals = {label: 0.0 for label in MODEL_LABELS}
+        for date_str in [d["date"] for d in days]:
+            if date_str in multi_model:
+                for label in MODEL_LABELS:
+                    val = multi_model[date_str].get(label)
+                    if val is not None:
+                        model_totals[label] += val
+        valid_totals = [v for v in model_totals.values() if v > 0]
+        if valid_totals:
+            lo, hi = round(min(valid_totals)), round(max(valid_totals))
+            mean = round(sum(valid_totals) / len(valid_totals))
+            if lo == hi:
+                sections.append(f"<strong>Multi-model snowfall:</strong> Models agree on ~{mean}cm total for the week.")
+            else:
+                sections.append(f"<strong>Multi-model snowfall:</strong> Models predict {lo}\u2013{hi}cm total (mean {mean}cm). See comparison table below.")
+        else:
+            sections.append(f"<strong>Snowfall:</strong> ~{round(total_snow)}cm total expected.")
+    else:
+        if total_snow > 0:
+            sections.append(f"<strong>Snowfall:</strong> ~{round(total_snow)}cm total expected across {snow_days} day{'s' if snow_days != 1 else ''}.")
+
+    # --- Temperature Trend ---
+    first_half = days[:len(days)//2]
+    second_half = days[len(days)//2:]
+    if first_half and second_half:
+        avg_first = sum(d["mountain"]["high"] for d in first_half) / len(first_half)
+        avg_second = sum(d["mountain"]["high"] for d in second_half) / len(second_half)
+        diff = avg_second - avg_first
+        if diff > 3:
+            trend = "Warming trend through the week"
+        elif diff < -3:
+            trend = "Cooling trend through the week"
+        else:
+            trend = "Temperatures relatively steady"
+        sections.append(f"<strong>Temperature:</strong> {trend} \u2014 mountain highs {temp_low} to {temp_high}\u00B0C.")
+    else:
+        sections.append(f"<strong>Temperature:</strong> Mountain highs {temp_low} to {temp_high}\u00B0C.")
+
+    # --- Wind Outlook ---
+    wind_notes = []
+    for d in days:
+        w = d["mountain"]["wind_max"]
+        if w > 25:
+            wind_notes.append((d["date_fmt"], "strong", w))
+        elif w > 15:
+            wind_notes.append((d["date_fmt"], "moderate", w))
+    if not wind_notes:
+        sections.append("<strong>Wind:</strong> Light winds expected all week \u2014 minimal wind effect on snow quality.")
+    else:
+        windy_days = ", ".join(f"{wn[0]} ({wn[2]} km/h)" for wn in wind_notes)
+        calm_count = len(days) - len(wind_notes)
+        sections.append(f"<strong>Wind:</strong> Notable wind on {windy_days}. {calm_count} calmer day{'s' if calm_count != 1 else ''} for alpine objectives.")
+
+    # --- Best Days ---
+    best = [(d["date_fmt"], d["day_of_week"]) for d in days
+            if d["avg_cloud"] < 50 and d["mountain"]["wind_max"] < 20]
     if best:
-        parts.append(f"Best days for big objectives: {', '.join(best)}.")
+        best_str = ", ".join(f"{b[0]}" for b in best)
+        sections.append(f"<strong>Best days for big objectives:</strong> {best_str} (clear + low wind).")
 
-    return " ".join(parts)
+    # --- Caution Days ---
+    caution = []
+    for d in days:
+        reasons = []
+        if d["mountain"]["snow"] > 15:
+            reasons.append("heavy snow")
+        if d["mountain"]["wind_max"] > 25:
+            reasons.append("strong wind")
+        if d["mountain"]["snow"] > 10 and d["mountain"]["wind_max"] > 15:
+            reasons.append("storm loading")
+        if reasons:
+            caution.append(f"{d['date_fmt']} ({', '.join(reasons)})")
+    if caution:
+        sections.append(f"<strong>Caution days:</strong> {'; '.join(caution)}. Conservative terrain choices recommended.")
+
+    return "<br>".join(sections)
 
 
 # ─── METAR Formatting ───────────────────────────────────────────────────────
@@ -480,9 +834,11 @@ def period_to_json(p):
     }
 
 
-def generate_html(days, metar, avy_data, ec_forecasts):
+def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     banner = avy_banner(avy_data)
-    outlook = gen_week_outlook(days)
+    outlook = gen_week_outlook(days, multi_model)
+    multi_model_table = gen_multi_model_table(days, multi_model) if multi_model else ""
+    snowpack_evolution = gen_snowpack_evolution(days, multi_model)
     metar_str = fmt_metar(metar)
     now_str = datetime.now().strftime("%B %d, %Y at %H:%M")
 
@@ -514,6 +870,12 @@ def generate_html(days, metar, avy_data, ec_forecasts):
             else:
                 ec_text = "No data"
 
+        # Build model snowfall mini-data for this day
+        model_snow = d.get("model_snow", {})
+        model_vals = {label: model_snow.get(label) for label in MODEL_LABELS}
+        valid_model = [v for v in model_vals.values() if v is not None]
+        model_mean = round(sum(valid_model) / len(valid_model), 1) if valid_model else None
+
         cards.append({
             "date": d["date_fmt"],
             "dayOfWeek": d["day_of_week"],
@@ -533,6 +895,8 @@ def generate_html(days, metar, avy_data, ec_forecasts):
             "metar": metar_str if i == 0 else "METAR is a live observation \u2014 check on the day.",
             "backcountry": gen_backcountry(d),
             "avyNote": gen_avy_notes(d, avy_data),
+            "modelSnow": model_vals,
+            "modelMean": model_mean,
         })
 
     cards_json = json.dumps(cards, ensure_ascii=False)
@@ -559,16 +923,31 @@ def generate_html(days, metar, avy_data, ec_forecasts):
         for s in report.get("summaries", []):
             stype = s.get("type", {}).get("display") or s.get("type", {}).get("value", "Summary")
             content = strip_html(s.get("content", ""))
+            # Break long text into structured paragraphs
+            sentences = [s.strip() for s in re.split(r'(?<=[.!?])\s+', content) if s.strip()]
+            if len(sentences) > 3:
+                # Group into paragraphs of 2-3 sentences
+                paras = []
+                for j in range(0, len(sentences), 3):
+                    paras.append(" ".join(sentences[j:j+3]))
+                formatted = "</p><p>".join(html_esc(p) for p in paras)
+            else:
+                formatted = html_esc(content)
             avy_html += (f'\n      <div style="margin-top:0.75rem">'
-                         f'<h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;'
-                         f'letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">{html_esc(stype)}</h3>'
-                         f'<div class="snowpack-text">{html_esc(content)}</div></div>')
+                         f'<h3 class="avy-section-title">{html_esc(stype)}</h3>'
+                         f'<div class="snowpack-text"><p>{formatted}</p></div></div>')
+
+        # Snowpack Evolution narrative
+        if snowpack_evolution:
+            avy_html += (f'\n      <div style="margin-top:0.75rem">'
+                         f'<h3 class="avy-section-title">Snowpack Evolution</h3>'
+                         f'<div class="snowpack-evolution">{snowpack_evolution}</div></div>')
 
         problems = report.get("problems", [])
         if problems:
             avy_html += ('\n      <div style="margin-top:0.75rem">'
-                         '<h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;'
-                         'letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">Avalanche Problems</h3>')
+                         '<h3 class="avy-section-title">Avalanche Problems</h3>'
+                         '<div class="avy-problems-grid">')
             for p in problems:
                 ptype = p.get("type", {}).get("display") or p.get("type", {}).get("value", "Problem")
                 comment = strip_html(p.get("comment", ""))
@@ -579,18 +958,24 @@ def generate_html(days, metar, avy_data, ec_forecasts):
                 likelihood = p.get("data", {}).get("likelihood", {}).get("display", "?")
                 sz = p.get("data", {}).get("expectedSize", {})
                 size = f"{sz.get('min','?')}-{sz.get('max','?')}" if sz else "?"
-                avy_html += (f'\n        <div class="avy-note" style="margin-bottom:0.5rem">'
-                             f'<strong>{html_esc(ptype)}</strong> \u2014 '
-                             f'Likelihood: {html_esc(likelihood)}, Size: {html_esc(size)}<br>'
-                             f'Elevations: {html_esc(elevs)} | Aspects: {html_esc(aspects)}<br>'
-                             f'{html_esc(comment)}</div>')
-            avy_html += '\n      </div>'
+                avy_html += (f'\n          <div class="avy-problem-card">'
+                             f'<div class="avy-problem-header">{html_esc(ptype)}</div>'
+                             f'<div class="avy-problem-meta">'
+                             f'<span>Likelihood: <strong>{html_esc(likelihood)}</strong></span>'
+                             f'<span>Size: <strong>{html_esc(size)}</strong></span>'
+                             f'</div>'
+                             f'<div class="avy-problem-details">'
+                             f'<div>Elevations: {html_esc(elevs)}</div>'
+                             f'<div>Aspects: {html_esc(aspects)}</div>'
+                             f'</div>'
+                             f'<div class="avy-problem-comment">{html_esc(comment)}</div>'
+                             f'</div>')
+            avy_html += '\n      </div></div>'
 
         advice = report.get("terrainAndTravelAdvice", [])
         if advice:
             avy_html += ('\n      <div style="margin-top:0.75rem">'
-                         '<h3 style="font-size:0.82rem;font-weight:600;text-transform:uppercase;'
-                         'letter-spacing:0.05em;color:var(--accent);margin-bottom:0.4rem">Travel Advice</h3>'
+                         '<h3 class="avy-section-title">Travel Advice</h3>'
                          '<ul class="snowpack-text">')
             for a in advice:
                 avy_html += f'\n        <li>{html_esc(a)}</li>'
@@ -681,7 +1066,60 @@ def generate_html(days, metar, avy_data, ec_forecasts):
   .snowpack-item .sp-label {{ font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }}
   .snowpack-item .sp-value {{ font-size: 0.95rem; font-weight: 600; margin-top: 0.2rem; }}
   .snowpack-text {{ font-size: 0.85rem; color: var(--text-muted); line-height: 1.7; }}
+  .snowpack-text p {{ margin-bottom: 0.5rem; }}
   .snowpack-text li {{ margin-bottom: 0.3rem; }}
+  .avy-section-title {{
+    font-size: 0.82rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.4rem;
+  }}
+  .snowpack-evolution {{
+    background: rgba(79,163,209,0.08); border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0; padding: 0.75rem 1rem;
+    font-size: 0.85rem; color: var(--text); line-height: 1.7;
+  }}
+  .avy-problems-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem; }}
+  .avy-problem-card {{
+    background: rgba(237,137,54,0.06); border: 1px solid rgba(237,137,54,0.2);
+    border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.84rem;
+  }}
+  .avy-problem-header {{
+    font-weight: 700; color: var(--danger-considerable); font-size: 0.9rem; margin-bottom: 0.4rem;
+  }}
+  .avy-problem-meta {{
+    display: flex; gap: 1rem; font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.3rem;
+  }}
+  .avy-problem-details {{
+    font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.4rem; line-height: 1.5;
+  }}
+  .avy-problem-comment {{ font-size: 0.82rem; color: var(--text); line-height: 1.6; }}
+  .multi-model-section {{
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.25rem; margin-bottom: 1.5rem;
+  }}
+  .multi-model-section h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }}
+  .mm-table-wrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+  .mm-table {{
+    width: 100%; border-collapse: collapse; font-size: 0.82rem; white-space: nowrap;
+  }}
+  .mm-table th {{
+    text-align: center; padding: 0.4rem 0.6rem; color: var(--accent);
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--border); font-weight: 600;
+  }}
+  .mm-table td {{
+    text-align: center; padding: 0.4rem 0.6rem; border-bottom: 1px solid rgba(45,58,77,0.5);
+    font-size: 0.84rem;
+  }}
+  .mm-table .mm-date {{ text-align: left; font-weight: 500; color: var(--text); }}
+  .mm-table .mm-total td {{ border-top: 2px solid var(--accent); font-weight: 600; }}
+  .mm-legend {{
+    margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;
+  }}
+  .model-bars {{ display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.78rem; }}
+  .model-bar-row {{ display: flex; align-items: center; gap: 0.4rem; }}
+  .model-bar-label {{ width: 3.5rem; color: var(--text-muted); text-align: right; font-size: 0.72rem; }}
+  .model-bar {{ height: 0.6rem; border-radius: 3px; background: var(--accent); min-width: 2px; transition: width 0.3s; }}
+  .model-bar-val {{ color: var(--text-muted); font-size: 0.72rem; }}
   footer {{ margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }}
   footer h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }}
   .link-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }}
@@ -704,6 +1142,9 @@ def generate_html(days, metar, avy_data, ec_forecasts):
     .day-oneliner {{ text-align: left; white-space: normal; }}
     .detail-grid {{ grid-template-columns: 1fr; }}
     .link-grid {{ grid-template-columns: 1fr; }}
+    .avy-problems-grid {{ grid-template-columns: 1fr; }}
+    .mm-table {{ font-size: 0.75rem; }}
+    .mm-table th, .mm-table td {{ padding: 0.3rem 0.4rem; }}
   }}
 </style>
 </head>
@@ -724,6 +1165,8 @@ def generate_html(days, metar, avy_data, ec_forecasts):
   </header>
 
   <div class="trip-overview">{outlook}</div>
+
+  {multi_model_table}
 
   <div id="cards"></div>
 
@@ -771,11 +1214,32 @@ const days = {cards_json};
 
 function renderCards() {{
   var c = document.getElementById("cards");
+  var models = ["HRDPS","GDPS","GFS","ECMWF","ICON"];
   c.innerHTML = days.map(function(d, i) {{
     function pc(label, p) {{
       if (!p) return '<div class="detail-cell"><div class="cell-label">'+label+'</div><div class="cell-value">No data</div></div>';
       return '<div class="detail-cell"><div class="cell-label">'+label+'</div><div class="cell-value">'
         +p.sky+'<br>'+p.temp+', Wind '+p.wind+'<br>Snow: '+p.snow+'</div></div>';
+    }}
+    // Model snowfall bars
+    var modelHtml = '';
+    if (d.modelSnow) {{
+      var vals = models.map(function(m) {{ return d.modelSnow[m]; }}).filter(function(v) {{ return v !== null && v !== undefined; }});
+      var maxVal = Math.max.apply(null, vals.concat([1]));
+      modelHtml = '<div class="detail-section"><h3>Model Snowfall Comparison</h3><div class="model-bars">';
+      models.forEach(function(m) {{
+        var v = d.modelSnow[m];
+        var display = (v !== null && v !== undefined) ? v + 'cm' : '--';
+        var width = (v !== null && v !== undefined && maxVal > 0) ? Math.round((v / maxVal) * 100) : 0;
+        var color = v === null || v === undefined || v === 0 ? '#2d3a4d' : v < 5 ? '#7ec4e8' : v <= 15 ? '#4fa3d1' : '#48bb78';
+        modelHtml += '<div class="model-bar-row"><span class="model-bar-label">'+m+'</span>'
+          +'<div class="model-bar" style="width:'+width+'%;background:'+color+'"></div>'
+          +'<span class="model-bar-val">'+display+'</span></div>';
+      }});
+      if (d.modelMean !== null) {{
+        modelHtml += '<div style="margin-top:0.3rem;font-size:0.78rem;color:var(--text-muted)">Mean: '+d.modelMean+'cm</div>';
+      }}
+      modelHtml += '</div></div>';
     }}
     return '<div class="day-card" onclick="toggle(this)">'
       +'<div class="day-summary">'
@@ -793,6 +1257,7 @@ function renderCards() {{
       +'<div class="detail-section"><h3>Mountain Forecast (1900m)</h3>'
       +'<div class="detail-grid">'+pc('Morning',d.am)+pc('Afternoon',d.pm)+pc('Night',d.night)+'</div>'
       +'<div style="margin-top:0.4rem;font-size:0.82rem;color:var(--text-muted)">Freezing level: '+d.freezing+'</div></div>'
+      +modelHtml
       +'<div class="detail-section"><h3>Valley Forecast (Revelstoke)</h3><div class="detail-text"><p>'+d.valley+'</p></div></div>'
       +'<div class="detail-section"><h3>Aviation Weather (CYRV)</h3><div class="detail-text"><p>'+d.metar+'</p></div></div>'
       +'<div class="detail-section"><h3>Backcountry Notes</h3><div class="backcountry-note">'+d.backcountry+'</div></div>'
@@ -840,6 +1305,7 @@ def main():
 
     mtn_data = safe_fetch("Open-Meteo (mountain)", lambda: fetch_open_meteo(CONFIG["mountain"]))
     val_data = safe_fetch("Open-Meteo (valley)", lambda: fetch_open_meteo(CONFIG["valley"]))
+    multi_model = safe_fetch("Multi-model snowfall", fetch_multi_model_snowfall)
     metar = safe_fetch("CYRV METAR", fetch_metar)
     avy_data = safe_fetch("Avalanche Canada", fetch_avalanche_canada)
     ec_forecasts = safe_fetch("Environment Canada", fetch_environment_canada)
@@ -857,7 +1323,7 @@ def main():
 
     print(f"\nProcessing {len(dates)} trip dates...")
     for date_str in dates:
-        day = process_day(date_str, mtn_data, val_data)
+        day = process_day(date_str, mtn_data, val_data, multi_model)
         if day:
             days.append(day)
             previous["days"][date_str] = day
@@ -876,7 +1342,7 @@ def main():
     save_data(previous)
 
     print("\nGenerating index.html...")
-    html = generate_html(days, metar, avy_data, ec_forecasts)
+    html = generate_html(days, metar, avy_data, ec_forecasts, multi_model)
     out = CONFIG.get("outFile", DIR / "index.html")
     with open(out, "w") as f:
         f.write(html)

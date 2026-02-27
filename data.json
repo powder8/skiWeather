@@ -610,23 +610,23 @@
       }
     }
   },
-  "lastUpdated": "2026-02-27T14:05:23.890166+00:00",
+  "lastUpdated": "2026-02-27T14:58:57.659208+00:00",
   "metar": {
     "icaoId": "CYRV",
-    "receiptTime": "2026-02-27T13:50:40.783Z",
-    "obsTime": 1772200140,
-    "reportTime": "2026-02-27T13:49:00.000Z",
+    "receiptTime": "2026-02-27T14:57:01.741Z",
+    "obsTime": 1772204160,
+    "reportTime": "2026-02-27T14:56:00.000Z",
     "temp": 1,
     "dewp": 1,
     "wdir": "VRB",
     "wspd": 2,
-    "visib": 2.25,
-    "altim": 1013.6,
-    "slp": 1015.6,
+    "visib": 8,
+    "altim": 1014.3,
+    "slp": 1016,
     "qcField": 2,
-    "wxString": "-RA BR",
+    "wxString": "-RA",
     "metarType": "SPECI",
-    "rawOb": "SPECI CYRV 271349Z AUTO VRB02KT 2 1/4SM -RA BR BKN017 OVC043 01/01 A2993 RMK SLP156",
+    "rawOb": "SPECI CYRV 271456Z AUTO VRB02KT 8SM -RA SCT027 BKN032 OVC044 01/01 A2995 RMK SLP160",
     "lat": 50.958,
     "lon": -118.176,
     "elev": 456,
@@ -634,14 +634,18 @@
     "cover": "OVC",
     "clouds": [
       {
+        "cover": "SCT",
+        "base": 2700
+      },
+      {
         "cover": "BKN",
-        "base": 1700
+        "base": 3200
       },
       {
         "cover": "OVC",
-        "base": 4300
+        "base": 4400
       }
     ],
-    "fltCat": "IFR"
+    "fltCat": "VFR"
   }
 }

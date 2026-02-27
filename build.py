@@ -819,13 +819,13 @@ def gen_cloud_strip(days):
     if not days:
         return ""
 
-    cell_w = 13
-    cell_h = 26
-    label_w = 52
+    cell_w = 30
+    cell_h = 28
+    label_w = 60
     w = label_w + 24 * cell_w + 4
     h = len(days) * cell_h + 24  # +24 for hour labels at top
 
-    svg = f'<svg viewBox="0 0 {w} {h}" style="width:100%;max-width:{w}px;height:auto">'
+    svg = f'<svg viewBox="0 0 {w} {h}" style="width:100%;height:auto">'
 
     # Hour labels at top
     for hour in range(24):

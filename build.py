@@ -392,13 +392,104 @@ def solar_aspects(wind_dir):
     return ["S", "SE", "SW"]
 
 
-def gen_backcountry(day):
-    notes = []
+def gen_terrain_guidance(day):
+    """Extract weather analysis into a structured dict for terrain recommendations."""
     cloud = day["avg_cloud"]
     snow = day["mountain"]["snow"]
     wind = day["mountain"]["wind_max"]
     wind_dir = day["mountain"]["wind_dir"]
     high = day["mountain"]["high"]
+
+    # Terrain type
+    if snow > 10 and wind < 20:
+        terrain_type = "Open bowls \u2014 deep fresh snow, excellent powder potential in sheltered bowls"
+    elif snow > 10 and wind >= 20:
+        terrain_type = "Gladed trees \u2014 open bowls wind-affected, favour trees for better snow quality"
+    elif wind > 25:
+        terrain_type = "Gladed trees \u2014 ridgelines exposed and scoured, trees offer best skiing"
+    elif cloud < 40:
+        terrain_type = "Open terrain \u2014 clear skies suit ridge tours with big views"
+    else:
+        terrain_type = "Mixed terrain \u2014 gladed trees offer variety and wind protection"
+
+    # Elevation band
+    if cloud > 70 or snow > 10:
+        elev_band = "Below treeline / Treeline"
+        elev_detail = "Alpine: poor visibility likely \u2014 limited value above treeline. Treeline and below-treeline trees offer better conditions."
+    elif wind > 25:
+        elev_band = "Treeline"
+        elev_detail = "Alpine: wind-affected \u2014 exposed ridges hazardous. Treeline glades offer best balance of terrain and protection."
+    else:
+        elev_band = "Alpine / Treeline"
+        elev_detail = "Alpine: good conditions for above-treeline objectives. All elevation bands accessible."
+
+    # Aspect note
+    lee = lee_aspects(wind_dir)
+    if wind > 15 and lee:
+        safe = [a for a in ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] if a not in lee]
+        aspect_note = f"Avoid {', '.join(lee)} (lee loading from {wind_dir} winds). Favour {', '.join(safe[:3])}."
+    else:
+        aspect_note = "Light winds \u2014 all aspects reasonable."
+    if high > 0:
+        aspect_note += " South-facing aspects will soften in afternoon sun."
+
+    # Bail conditions
+    bail_conditions = []
+    if snow > 10:
+        bail_conditions.append("Storm slab concern with significant new snow")
+    if wind > 20:
+        bail_conditions.append(f"Wind loading on lee aspects ({wind_dir} winds)")
+    if high > 0:
+        bail_conditions.append("Warm temps \u2014 watch for wet loose on solar aspects")
+    if cloud > 80:
+        bail_conditions.append("Poor visibility \u2014 limited ability to spot overhead hazards")
+    bail_conditions.append("Persistent weak layers (Feb 13 SH, Jan 28 crust)")
+
+    # Timing
+    if high > 2:
+        departure = "Before 8:30am"
+        turnaround = "1:00pm"
+        timing_plan = "Start early \u2014 south aspects will deteriorate by early afternoon. Plan to be off steep solar aspects by 1pm."
+    elif snow > 10:
+        departure = "Flexible \u2014 after snowfall eases"
+        turnaround = "3:00pm"
+        timing_plan = "Storm day \u2014 no rush for early start. Best skiing once snowfall eases. Watch for natural avalanche cycle during/after heavy loading."
+    else:
+        departure = "8:30\u20139:00am"
+        turnaround = "2:30pm"
+        timing_plan = "Normal timing. Morning starts offer best snow surfaces before any afternoon warming."
+
+    # Visibility
+    if cloud > 70:
+        visibility = "Poor \u2014 flat light in alpine, limited ability to see terrain features"
+    elif cloud > 40:
+        visibility = "Variable \u2014 periods of limited visibility possible"
+    else:
+        visibility = "Good \u2014 clear conditions for alpine travel"
+
+    return {
+        "terrain_type": terrain_type,
+        "elev_band": elev_band,
+        "elev_detail": elev_detail,
+        "aspect_note": aspect_note,
+        "bail_conditions": bail_conditions,
+        "departure": departure,
+        "turnaround": turnaround,
+        "timing_plan": timing_plan,
+        "visibility": visibility,
+    }
+
+
+def gen_backcountry(day):
+    """Generate backcountry skiing notes using terrain guidance analysis."""
+    g = gen_terrain_guidance(day)
+    cloud = day["avg_cloud"]
+    snow = day["mountain"]["snow"]
+    wind = day["mountain"]["wind_max"]
+    wind_dir = day["mountain"]["wind_dir"]
+    high = day["mountain"]["high"]
+
+    notes = []
 
     # --- Visibility & Conditions ---
     if cloud < 30:
@@ -425,55 +516,11 @@ def gen_backcountry(day):
     if high > 2:
         notes.append("Warm temps \u2014 watch for wet loose on steep south-facing terrain in afternoon. Start early.")
 
-    # --- Aspect Guidance ---
-    lee = lee_aspects(wind_dir)
-    if wind > 15 and lee:
-        notes.append(f"<br><strong>Aspect:</strong> Avoid {', '.join(lee)} aspects (lee loading from {wind_dir} winds).")
-        safe = [a for a in ["N", "NE", "E", "SE", "S", "SW", "W", "NW"] if a not in lee]
-        if safe:
-            notes.append(f"Favour {', '.join(safe[:3])} aspects for wind-sheltered skiing.")
-    elif wind <= 15:
-        notes.append("<br><strong>Aspect:</strong> Light winds \u2014 all aspects reasonable.")
-    if high > 0:
-        notes.append("South-facing aspects will soften in afternoon sun; ski early or late for best snow.")
-
-    # --- Elevation Band ---
-    notes.append("<br><strong>Elevation band:</strong>")
-    if cloud > 70 or snow > 10:
-        notes.append("Alpine: Poor visibility likely \u2014 limited value above treeline.")
-    elif wind > 25:
-        notes.append("Alpine: Wind-affected \u2014 exposed ridges hazardous.")
-    else:
-        notes.append("Alpine: Good conditions for above-treeline objectives.")
-
-    if cloud > 80 and snow > 5:
-        notes.append("Treeline: Flat light but manageable with terrain features for reference.")
-    else:
-        notes.append("Treeline: Good zone for varied terrain.")
-
-    notes.append("Below treeline: Protected skiing with good visibility in trees.")
-
-    # --- Terrain Type ---
-    notes.append("<br><strong>Terrain:</strong>")
-    if snow > 10 and wind < 20:
-        notes.append("Open bowls will have deep fresh snow \u2014 excellent powder potential in sheltered bowls.")
-    elif snow > 10 and wind > 20:
-        notes.append("Open bowls wind-affected \u2014 favour gladed trees for better snow quality.")
-    elif wind > 25:
-        notes.append("Ridgelines exposed and scoured. Gladed trees offer best skiing.")
-    elif cloud < 40:
-        notes.append("Clear skies suit open terrain and ridge tours with big views.")
-    else:
-        notes.append("Mixed terrain works well. Gladed trees offer variety and wind protection.")
-
-    # --- Timing ---
-    notes.append("<br><strong>Timing:</strong>")
-    if high > 2:
-        notes.append("Start early (before 9am departure). South aspects will deteriorate by early afternoon. Plan to be off steep solar aspects by 1pm.")
-    elif snow > 10:
-        notes.append("Storm day \u2014 no rush for early start. Best skiing once snowfall eases. Watch for natural avalanche cycle during/after heavy loading.")
-    else:
-        notes.append("Normal timing. Morning starts offer best snow surfaces before any afternoon warming.")
+    # --- Structured guidance from terrain analysis ---
+    notes.append(f"<br><strong>Aspect:</strong> {g['aspect_note']}")
+    notes.append(f"<br><strong>Elevation band:</strong> {g['elev_detail']}")
+    notes.append(f"<br><strong>Terrain:</strong> {g['terrain_type']}.")
+    notes.append(f"<br><strong>Timing:</strong> {g['timing_plan']}")
 
     # --- Sol Mountain Context ---
     notes.append("<br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately \u2014 discuss objectives at breakfast briefing.")
@@ -511,7 +558,7 @@ def gen_avy_notes(day, avy_data):
 
 
 def gen_trip_planner(days, avy_data):
-    """Generate an ATAR-style trip planning section for each day."""
+    """Generate a Daily Terrain Guide section for each day."""
     if not days:
         return ""
 
@@ -573,7 +620,10 @@ def gen_trip_planner(days, avy_data):
         weather_parts.append(f"Freezing level {fl}m.")
         weather_summary = " ".join(weather_parts)
 
-        # Auto-generate red flags
+        # Auto-generate terrain guidance
+        guidance = gen_terrain_guidance(d)
+
+        # Auto-generate red flags (same as bail_conditions but with extra avy items)
         red_flags = []
         if snow > 10:
             red_flags.append("Storm slab concern with significant new snow")
@@ -590,13 +640,7 @@ def gen_trip_planner(days, avy_data):
         red_flags.append("Persistent weak layers (Feb 13 SH, Jan 28 crust)")
         red_flags_text = ". ".join(red_flags) + "."
 
-        # Visibility-based notes
-        if cloud > 70:
-            vis_note = "Poor \u2014 flat light in alpine, limited ability to see terrain features"
-        elif cloud > 40:
-            vis_note = "Variable \u2014 periods of limited visibility possible"
-        else:
-            vis_note = "Good \u2014 clear conditions for alpine travel"
+        bail_text = ". ".join(guidance["bail_conditions"]) + "." if guidance["bail_conditions"] else "No specific bail conditions identified."
 
         active = " active" if i == 0 else ""
         day_tabs.append(
@@ -634,7 +678,7 @@ def gen_trip_planner(days, avy_data):
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Visibility</span>
-                <span class="tp-value">{html_esc(vis_note)}</span>
+                <span class="tp-value">{html_esc(guidance["visibility"])}</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Expected red flags</span>
@@ -644,49 +688,27 @@ def gen_trip_planner(days, avy_data):
           </div>
 
           <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">{html_esc(guidance["terrain_type"])}</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">{html_esc(guidance["elev_band"])} &mdash; {html_esc(guidance["elev_detail"])}</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">{html_esc(guidance["aspect_note"])}</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">{html_esc(bail_text)}</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -696,15 +718,15 @@ def gen_trip_planner(days, avy_data):
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">{html_esc(guidance["departure"])}</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">{html_esc(guidance["turnaround"])}</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">{html_esc(guidance["timing_plan"])}</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -712,6 +734,26 @@ def gen_trip_planner(days, avy_data):
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>''')
 
     tabs_html = "\n          ".join(day_tabs)
@@ -719,8 +761,8 @@ def gen_trip_planner(days, avy_data):
 
     return f'''
     <div class="trip-planner-section">
-      <h2>Trip Planner (ATAR Framework)</h2>
-      <div class="tp-subtitle">Avalanche conditions auto-filled from forecast data. Fill in group, route, and timing plans at morning briefing.</div>
+      <h2>Daily Terrain Guide</h2>
+      <div class="tp-subtitle">Auto-generated from forecast data. Terrain, route, and timing recommendations update with each build.</div>
       <div class="tp-tabs">
         {tabs_html}
       </div>
@@ -1290,20 +1332,29 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
 <title>Sol Mountain Backcountry Ski Trip \u2014 March 1\u20137, 2026</title>
 <style>
   :root {{
-    --bg: #0f1724; --card-bg: #1a2332; --card-hover: #1f2b3d;
+    --bg: #0b1120; --card-bg: rgba(22,33,52,0.65); --card-hover: rgba(28,42,64,0.75);
     --accent: #4fa3d1; --accent-light: #7ec4e8;
+    --accent-glow: rgba(79,163,209,0.25);
     --text: #e2e8f0; --text-muted: #8899aa;
     --danger-high: #e53e3e; --danger-considerable: #ed8936; --danger-moderate: #ecc94b;
-    --snow: #b8d4e8; --border: #2d3a4d; --green: #48bb78;
+    --snow: #b8d4e8; --border: rgba(45,58,77,0.5); --border-hover: rgba(79,163,209,0.45); --green: #48bb78;
+    --glass-blur: 12px; --radius: 14px;
+    --shadow-card: 0 2px 16px rgba(0,0,0,0.28);
+    --shadow-glow: 0 0 20px var(--accent-glow);
+    --transition: 0.25s cubic-bezier(.4,0,.2,1);
   }}
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   body {{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
   }}
-  .container {{ max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }}
-  header {{ text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }}
-  header h1 {{ font-size: 1.75rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }}
+  .container {{ max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem; }}
+  header {{ text-align: center; margin-bottom: 2rem; padding-bottom: 2rem; position: relative; }}
+  header::after {{
+    content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-light) 50%, var(--accent) 70%, transparent);
+  }}
+  header h1 {{ font-size: 1.85rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; letter-spacing: -0.02em; }}
   .dates {{ font-size: 1.1rem; color: var(--accent-light); font-weight: 500; }}
   .location-info {{ color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.5; }}
   .avy-banner {{
@@ -1311,22 +1362,25 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     margin-top: 1rem; padding: 0.6rem 1.2rem;
     border-radius: 8px; font-size: 0.9rem; font-weight: 600;
   }}
-  .avy-banner a {{ text-decoration: underline; text-underline-offset: 2px; }}
+  .avy-banner a {{ text-decoration: underline; text-underline-offset: 2px; transition: color var(--transition); }}
   .avy-banner a:hover {{ color: #fff; }}
   .avy-dot {{ width: 10px; height: 10px; border-radius: 50%; animation: pulse 2s infinite; }}
   @keyframes pulse {{ 0%, 100% {{ opacity: 1; }} 50% {{ opacity: 0.4; }} }}
   .trip-overview {{
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.88rem;
-    color: var(--text-muted); line-height: 1.7;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; font-size: 0.88rem;
+    color: var(--text-muted); line-height: 1.7; box-shadow: var(--shadow-card);
   }}
   .trip-overview strong {{ color: var(--text); }}
   .day-card {{
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    margin-bottom: 0.75rem; overflow: hidden; transition: border-color 0.2s; cursor: pointer;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 0.85rem; overflow: hidden; transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    cursor: pointer; box-shadow: var(--shadow-card);
   }}
-  .day-card:hover {{ border-color: var(--accent); }}
-  .day-card.expanded {{ border-color: var(--accent); }}
+  .day-card:hover {{ border-color: var(--border-hover); box-shadow: var(--shadow-card), 0 0 12px rgba(79,163,209,0.1); transform: translateY(-1px); }}
+  .day-card.expanded {{ border-color: var(--border-hover); box-shadow: var(--shadow-card), var(--shadow-glow); }}
   .day-summary {{
     display: grid; grid-template-columns: 7.5rem 3rem 1fr auto;
     align-items: center; gap: 0.75rem; padding: 0.9rem 1.25rem; user-select: none;
@@ -1341,15 +1395,18 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .info-value.snow-value {{ color: var(--snow); }}
   .info-value.temp-value {{ color: var(--accent-light); }}
   .day-oneliner {{ font-size: 0.82rem; color: var(--text-muted); text-align: right; min-width: 0; white-space: nowrap; }}
-  .expand-arrow {{ color: var(--text-muted); font-size: 0.7rem; transition: transform 0.2s; margin-left: 0.5rem; flex-shrink: 0; }}
+  .expand-arrow {{ color: var(--text-muted); font-size: 0.7rem; transition: transform var(--transition); margin-left: 0.5rem; flex-shrink: 0; }}
   .day-card.expanded .expand-arrow {{ transform: rotate(180deg); }}
   .day-detail {{ display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }}
-  .day-card.expanded .day-detail {{ display: block; }}
   .detail-section {{ margin-top: 1rem; }}
   .detail-section h3 {{
     font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--accent); margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
   }}
+  .day-card.expanded .day-detail {{ display: block; animation: fadeSlideIn 0.3s ease-out; }}
+  @keyframes fadeSlideIn {{ from {{ opacity: 0; transform: translateY(-8px); }} to {{ opacity: 1; transform: translateY(0); }} }}
   .detail-grid {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }}
   .detail-cell {{ background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0.6rem 0.75rem; font-size: 0.82rem; }}
   .detail-cell .cell-label {{ font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }}
@@ -1358,8 +1415,8 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .detail-text p {{ margin-bottom: 0.4rem; }}
   .backcountry-note {{ background: rgba(72,187,120,0.08); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; font-size: 0.84rem; line-height: 1.6; }}
   .avy-note {{ background: rgba(237,137,54,0.08); border-left: 3px solid var(--danger-considerable); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; font-size: 0.84rem; line-height: 1.6; }}
-  .snowpack-section {{ background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-top: 1.5rem; }}
-  .snowpack-section h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }}
+  .snowpack-section {{ background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-top: 1.75rem; box-shadow: var(--shadow-card); }}
+  .snowpack-section h2 {{ font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff; }}
   .snowpack-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }}
   .snowpack-item {{ background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0.75rem; }}
   .snowpack-item .sp-label {{ font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }}
@@ -1369,7 +1426,9 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .snowpack-text li {{ margin-bottom: 0.3rem; }}
   .avy-section-title {{
     font-size: 0.82rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.4rem;
+    letter-spacing: 0.05em; margin-bottom: 0.4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }}
   .snowpack-evolution {{
     background: rgba(79,163,209,0.08); border-left: 3px solid var(--accent);
@@ -1392,10 +1451,11 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   }}
   .avy-problem-comment {{ font-size: 0.82rem; color: var(--text); line-height: 1.6; }}
   .multi-model-section {{
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; margin-bottom: 1.5rem;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-card);
   }}
-  .multi-model-section h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }}
+  .multi-model-section h2 {{ font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff; }}
   .mm-table-wrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
   .mm-table {{
     width: 100%; border-collapse: collapse; font-size: 0.82rem; white-space: nowrap;
@@ -1419,10 +1479,11 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .cloud-chart-legend {{ display: flex; gap: 0.75rem; font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; }}
   .cloud-swatch {{ display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 0.2rem; }}
   .cloud-strip-section {{
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; margin-bottom: 1.5rem;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-card);
   }}
-  .cloud-strip-section h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #fff; }}
+  .cloud-strip-section h2 {{ font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; color: #fff; }}
   .cloud-strip-subtitle {{ font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem; }}
   .cloud-strip-wrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
   .cloud-strip-legend {{
@@ -1437,24 +1498,31 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .model-bar {{ height: 0.6rem; border-radius: 3px; background: var(--accent); min-width: 2px; transition: width 0.3s; }}
   .model-bar-val {{ color: var(--text-muted); font-size: 0.72rem; }}
   .trip-planner-section {{
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; margin-bottom: 1.5rem;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-card);
   }}
-  .trip-planner-section h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #fff; }}
+  .trip-planner-section h2 {{ font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; color: #fff; }}
   .tp-subtitle {{ font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem; }}
-  .tp-tabs {{ display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }}
+  .tp-tabs {{ display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }}
   .tp-tab {{
-    background: transparent; border: 1px solid var(--border); border-radius: 6px;
-    color: var(--text-muted); font-size: 0.8rem; padding: 0.35rem 0.7rem; cursor: pointer;
-    font-family: inherit; transition: all 0.2s;
+    background: transparent; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text-muted); font-size: 0.8rem; padding: 0.4rem 0.75rem; cursor: pointer;
+    font-family: inherit; transition: all var(--transition);
   }}
-  .tp-tab:hover {{ border-color: var(--accent); color: var(--text); }}
-  .tp-tab.active {{ background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }}
+  .tp-tab:hover {{ border-color: var(--border-hover); color: var(--text); }}
+  .tp-tab.active {{
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: #fff; border-color: transparent; font-weight: 600;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }}
   .tp-day-header {{ font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }}
   .tp-category {{ margin-bottom: 1rem; }}
   .tp-cat-header {{
     font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--accent); margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }}
   .tp-grid {{ display: flex; flex-direction: column; gap: 0.35rem; }}
   .tp-row {{ display: flex; gap: 0.75rem; font-size: 0.84rem; line-height: 1.5; }}
@@ -1464,21 +1532,42 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .tp-value.tp-editable {{ color: var(--text-muted); font-style: italic; }}
   .tp-value.tp-avy-rating {{ font-weight: 600; }}
   .tp-value.tp-redflag {{ color: var(--danger-considerable); }}
-  footer {{ margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }}
-  footer h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }}
-  .link-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }}
-  .link-item {{
-    display: block; padding: 0.6rem 0.9rem; background: var(--card-bg); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--accent-light); text-decoration: none; font-size: 0.85rem;
-    transition: border-color 0.2s, background 0.2s;
+  .tp-group-details {{ margin-top: 0.5rem; opacity: 0.7; transition: opacity var(--transition); }}
+  .tp-group-details[open] {{ opacity: 1; }}
+  .tp-group-summary {{
+    cursor: pointer; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--text-muted); padding: 0.5rem 0; list-style: none;
+    display: flex; align-items: center; gap: 0.4rem; transition: color var(--transition);
   }}
-  .link-item:hover {{ border-color: var(--accent); background: var(--card-hover); }}
+  .tp-group-summary:hover {{ color: var(--text); }}
+  .tp-group-summary::-webkit-details-marker {{ display: none; }}
+  .tp-group-summary::before {{ content: '\u25B6'; font-size: 0.6rem; transition: transform var(--transition); }}
+  .tp-group-details[open] > .tp-group-summary::before {{ transform: rotate(90deg); }}
+  footer {{ margin-top: 2rem; padding-top: 1.5rem; position: relative; }}
+  footer::before {{
+    content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-light) 50%, var(--accent) 70%, transparent);
+  }}
+  footer h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }}
+  .link-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }}
+  .link-item {{
+    display: block; padding: 0.7rem 1rem; background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: 10px; color: var(--accent-light); text-decoration: none; font-size: 0.85rem;
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition), transform var(--transition);
+    box-shadow: var(--shadow-card);
+  }}
+  .link-item:hover {{ border-color: var(--border-hover); background: var(--card-hover); box-shadow: var(--shadow-card), 0 0 10px rgba(79,163,209,0.08); transform: translateY(-1px); }}
   .link-item small {{ display: block; color: var(--text-muted); font-size: 0.75rem; margin-top: 0.15rem; }}
-  .last-updated {{ text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 1rem; padding-bottom: 1rem; }}
+  .last-updated {{ text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 1.25rem; padding-bottom: 1rem; }}
   .auto-note {{ text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic; }}
+  ::-webkit-scrollbar {{ width: 6px; height: 6px; }}
+  ::-webkit-scrollbar-track {{ background: transparent; }}
+  ::-webkit-scrollbar-thumb {{ background: rgba(136,153,170,0.3); border-radius: 3px; }}
+  ::-webkit-scrollbar-thumb:hover {{ background: rgba(136,153,170,0.5); }}
   @media (max-width: 640px) {{
-    .container {{ padding: 1rem 0.75rem; }}
+    .container {{ padding: 1.25rem 0.75rem; }}
     header h1 {{ font-size: 1.35rem; }}
+    .day-card, .trip-overview, .snowpack-section, .multi-model-section, .cloud-strip-section, .trip-planner-section {{ border-radius: 10px; }}
     .day-summary {{ grid-template-columns: 1fr; gap: 0.4rem; padding: 0.75rem 1rem; position: relative; }}
     .day-date {{ display: flex; align-items: center; gap: 0.75rem; }}
     .day-date small {{ display: inline; }}
@@ -1489,6 +1578,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     .avy-problems-grid {{ grid-template-columns: 1fr; }}
     .mm-table {{ font-size: 0.75rem; }}
     .mm-table th, .mm-table td {{ padding: 0.3rem 0.4rem; }}
+    .tp-category, .tp-group-details {{ padding-left: 0.25rem; padding-right: 0.25rem; }}
   }}
 </style>
 </head>

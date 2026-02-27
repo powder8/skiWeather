@@ -6,20 +6,29 @@
 <title>Sol Mountain Backcountry Ski Trip — March 1–7, 2026</title>
 <style>
   :root {
-    --bg: #0f1724; --card-bg: #1a2332; --card-hover: #1f2b3d;
+    --bg: #0b1120; --card-bg: rgba(22,33,52,0.65); --card-hover: rgba(28,42,64,0.75);
     --accent: #4fa3d1; --accent-light: #7ec4e8;
+    --accent-glow: rgba(79,163,209,0.25);
     --text: #e2e8f0; --text-muted: #8899aa;
     --danger-high: #e53e3e; --danger-considerable: #ed8936; --danger-moderate: #ecc94b;
-    --snow: #b8d4e8; --border: #2d3a4d; --green: #48bb78;
+    --snow: #b8d4e8; --border: rgba(45,58,77,0.5); --border-hover: rgba(79,163,209,0.45); --green: #48bb78;
+    --glass-blur: 12px; --radius: 14px;
+    --shadow-card: 0 2px 16px rgba(0,0,0,0.28);
+    --shadow-glow: 0 0 20px var(--accent-glow);
+    --transition: 0.25s cubic-bezier(.4,0,.2,1);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
   }
-  .container { max-width: 900px; margin: 0 auto; padding: 1.5rem 1rem; }
-  header { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-  header h1 { font-size: 1.75rem; font-weight: 700; color: #fff; margin-bottom: 0.25rem; }
+  .container { max-width: 900px; margin: 0 auto; padding: 2rem 1.25rem; }
+  header { text-align: center; margin-bottom: 2rem; padding-bottom: 2rem; position: relative; }
+  header::after {
+    content: ''; position: absolute; bottom: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-light) 50%, var(--accent) 70%, transparent);
+  }
+  header h1 { font-size: 1.85rem; font-weight: 800; color: #fff; margin-bottom: 0.25rem; letter-spacing: -0.02em; }
   .dates { font-size: 1.1rem; color: var(--accent-light); font-weight: 500; }
   .location-info { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.5rem; line-height: 1.5; }
   .avy-banner {
@@ -27,22 +36,25 @@
     margin-top: 1rem; padding: 0.6rem 1.2rem;
     border-radius: 8px; font-size: 0.9rem; font-weight: 600;
   }
-  .avy-banner a { text-decoration: underline; text-underline-offset: 2px; }
+  .avy-banner a { text-decoration: underline; text-underline-offset: 2px; transition: color var(--transition); }
   .avy-banner a:hover { color: #fff; }
   .avy-dot { width: 10px; height: 10px; border-radius: 50%; animation: pulse 2s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
   .trip-overview {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1rem 1.25rem; margin-bottom: 1.5rem; font-size: 0.88rem;
-    color: var(--text-muted); line-height: 1.7;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.25rem 1.5rem; margin-bottom: 1.75rem; font-size: 0.88rem;
+    color: var(--text-muted); line-height: 1.7; box-shadow: var(--shadow-card);
   }
   .trip-overview strong { color: var(--text); }
   .day-card {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    margin-bottom: 0.75rem; overflow: hidden; transition: border-color 0.2s; cursor: pointer;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 0.85rem; overflow: hidden; transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+    cursor: pointer; box-shadow: var(--shadow-card);
   }
-  .day-card:hover { border-color: var(--accent); }
-  .day-card.expanded { border-color: var(--accent); }
+  .day-card:hover { border-color: var(--border-hover); box-shadow: var(--shadow-card), 0 0 12px rgba(79,163,209,0.1); transform: translateY(-1px); }
+  .day-card.expanded { border-color: var(--border-hover); box-shadow: var(--shadow-card), var(--shadow-glow); }
   .day-summary {
     display: grid; grid-template-columns: 7.5rem 3rem 1fr auto;
     align-items: center; gap: 0.75rem; padding: 0.9rem 1.25rem; user-select: none;
@@ -57,15 +69,18 @@
   .info-value.snow-value { color: var(--snow); }
   .info-value.temp-value { color: var(--accent-light); }
   .day-oneliner { font-size: 0.82rem; color: var(--text-muted); text-align: right; min-width: 0; white-space: nowrap; }
-  .expand-arrow { color: var(--text-muted); font-size: 0.7rem; transition: transform 0.2s; margin-left: 0.5rem; flex-shrink: 0; }
+  .expand-arrow { color: var(--text-muted); font-size: 0.7rem; transition: transform var(--transition); margin-left: 0.5rem; flex-shrink: 0; }
   .day-card.expanded .expand-arrow { transform: rotate(180deg); }
   .day-detail { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid var(--border); }
-  .day-card.expanded .day-detail { display: block; }
   .detail-section { margin-top: 1rem; }
   .detail-section h3 {
     font-size: 0.82rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--accent); margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
   }
+  .day-card.expanded .day-detail { display: block; animation: fadeSlideIn 0.3s ease-out; }
+  @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
   .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
   .detail-cell { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0.6rem 0.75rem; font-size: 0.82rem; }
   .detail-cell .cell-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 0.25rem; }
@@ -74,8 +89,8 @@
   .detail-text p { margin-bottom: 0.4rem; }
   .backcountry-note { background: rgba(72,187,120,0.08); border-left: 3px solid var(--green); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; font-size: 0.84rem; line-height: 1.6; }
   .avy-note { background: rgba(237,137,54,0.08); border-left: 3px solid var(--danger-considerable); border-radius: 0 6px 6px 0; padding: 0.6rem 0.9rem; font-size: 0.84rem; line-height: 1.6; }
-  .snowpack-section { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; margin-top: 1.5rem; }
-  .snowpack-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
+  .snowpack-section { background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur)); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; margin-top: 1.75rem; box-shadow: var(--shadow-card); }
+  .snowpack-section h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff; }
   .snowpack-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
   .snowpack-item { background: rgba(0,0,0,0.2); border-radius: 6px; padding: 0.75rem; }
   .snowpack-item .sp-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
@@ -85,7 +100,9 @@
   .snowpack-text li { margin-bottom: 0.3rem; }
   .avy-section-title {
     font-size: 0.82rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.05em; color: var(--accent); margin-bottom: 0.4rem;
+    letter-spacing: 0.05em; margin-bottom: 0.4rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .snowpack-evolution {
     background: rgba(79,163,209,0.08); border-left: 3px solid var(--accent);
@@ -108,10 +125,11 @@
   }
   .avy-problem-comment { font-size: 0.82rem; color: var(--text); line-height: 1.6; }
   .multi-model-section {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; margin-bottom: 1.5rem;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-card);
   }
-  .multi-model-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
+  .multi-model-section h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.75rem; color: #fff; }
   .mm-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .mm-table {
     width: 100%; border-collapse: collapse; font-size: 0.82rem; white-space: nowrap;
@@ -135,10 +153,11 @@
   .cloud-chart-legend { display: flex; gap: 0.75rem; font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; }
   .cloud-swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 0.2rem; }
   .cloud-strip-section {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; margin-bottom: 1.5rem;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-card);
   }
-  .cloud-strip-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #fff; }
+  .cloud-strip-section h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; color: #fff; }
   .cloud-strip-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem; }
   .cloud-strip-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .cloud-strip-legend {
@@ -153,24 +172,31 @@
   .model-bar { height: 0.6rem; border-radius: 3px; background: var(--accent); min-width: 2px; transition: width 0.3s; }
   .model-bar-val { color: var(--text-muted); font-size: 0.72rem; }
   .trip-planner-section {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 1.25rem; margin-bottom: 1.5rem;
+    background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 1.5rem; margin-bottom: 1.75rem; box-shadow: var(--shadow-card);
   }
-  .trip-planner-section h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #fff; }
+  .trip-planner-section h2 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.25rem; color: #fff; }
   .tp-subtitle { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem; }
-  .tp-tabs { display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
+  .tp-tabs { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }
   .tp-tab {
-    background: transparent; border: 1px solid var(--border); border-radius: 6px;
-    color: var(--text-muted); font-size: 0.8rem; padding: 0.35rem 0.7rem; cursor: pointer;
-    font-family: inherit; transition: all 0.2s;
+    background: transparent; border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text-muted); font-size: 0.8rem; padding: 0.4rem 0.75rem; cursor: pointer;
+    font-family: inherit; transition: all var(--transition);
   }
-  .tp-tab:hover { border-color: var(--accent); color: var(--text); }
-  .tp-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }
+  .tp-tab:hover { border-color: var(--border-hover); color: var(--text); }
+  .tp-tab.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    color: #fff; border-color: transparent; font-weight: 600;
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
   .tp-day-header { font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }
   .tp-category { margin-bottom: 1rem; }
   .tp-cat-header {
     font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-    color: var(--accent); margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+    margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--accent), var(--accent-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   }
   .tp-grid { display: flex; flex-direction: column; gap: 0.35rem; }
   .tp-row { display: flex; gap: 0.75rem; font-size: 0.84rem; line-height: 1.5; }
@@ -180,21 +206,42 @@
   .tp-value.tp-editable { color: var(--text-muted); font-style: italic; }
   .tp-value.tp-avy-rating { font-weight: 600; }
   .tp-value.tp-redflag { color: var(--danger-considerable); }
-  footer { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }
-  footer h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
-  .link-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }
-  .link-item {
-    display: block; padding: 0.6rem 0.9rem; background: var(--card-bg); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--accent-light); text-decoration: none; font-size: 0.85rem;
-    transition: border-color 0.2s, background 0.2s;
+  .tp-group-details { margin-top: 0.5rem; opacity: 0.7; transition: opacity var(--transition); }
+  .tp-group-details[open] { opacity: 1; }
+  .tp-group-summary {
+    cursor: pointer; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.05em; color: var(--text-muted); padding: 0.5rem 0; list-style: none;
+    display: flex; align-items: center; gap: 0.4rem; transition: color var(--transition);
   }
-  .link-item:hover { border-color: var(--accent); background: var(--card-hover); }
+  .tp-group-summary:hover { color: var(--text); }
+  .tp-group-summary::-webkit-details-marker { display: none; }
+  .tp-group-summary::before { content: '▶'; font-size: 0.6rem; transition: transform var(--transition); }
+  .tp-group-details[open] > .tp-group-summary::before { transform: rotate(90deg); }
+  footer { margin-top: 2rem; padding-top: 1.5rem; position: relative; }
+  footer::before {
+    content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent) 30%, var(--accent-light) 50%, var(--accent) 70%, transparent);
+  }
+  footer h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }
+  .link-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.6rem; margin-bottom: 1rem; }
+  .link-item {
+    display: block; padding: 0.7rem 1rem; background: var(--card-bg); backdrop-filter: blur(var(--glass-blur)); -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--border); border-radius: 10px; color: var(--accent-light); text-decoration: none; font-size: 0.85rem;
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition), transform var(--transition);
+    box-shadow: var(--shadow-card);
+  }
+  .link-item:hover { border-color: var(--border-hover); background: var(--card-hover); box-shadow: var(--shadow-card), 0 0 10px rgba(79,163,209,0.08); transform: translateY(-1px); }
   .link-item small { display: block; color: var(--text-muted); font-size: 0.75rem; margin-top: 0.15rem; }
-  .last-updated { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 1rem; padding-bottom: 1rem; }
+  .last-updated { text-align: center; font-size: 0.78rem; color: var(--text-muted); margin-top: 1.25rem; padding-bottom: 1rem; }
   .auto-note { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; font-style: italic; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(136,153,170,0.3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(136,153,170,0.5); }
   @media (max-width: 640px) {
-    .container { padding: 1rem 0.75rem; }
+    .container { padding: 1.25rem 0.75rem; }
     header h1 { font-size: 1.35rem; }
+    .day-card, .trip-overview, .snowpack-section, .multi-model-section, .cloud-strip-section, .trip-planner-section { border-radius: 10px; }
     .day-summary { grid-template-columns: 1fr; gap: 0.4rem; padding: 0.75rem 1rem; position: relative; }
     .day-date { display: flex; align-items: center; gap: 0.75rem; }
     .day-date small { display: inline; }
@@ -205,6 +252,7 @@
     .avy-problems-grid { grid-template-columns: 1fr; }
     .mm-table { font-size: 0.75rem; }
     .mm-table th, .mm-table td { padding: 0.3rem 0.4rem; }
+    .tp-category, .tp-group-details { padding-left: 0.25rem; padding-right: 0.25rem; }
   }
 </style>
 </head>
@@ -224,7 +272,7 @@
     </div>
   </header>
 
-  <div class="trip-overview"><strong>Weather pattern:</strong> cloud cover → snowfall.<br><strong>Multi-model snowfall:</strong> Models predict 6–38cm total (mean 22cm). See comparison table below.<br><strong>Temperature:</strong> Temperatures relatively steady — mountain highs -15 to 2°C.<br><strong>Wind:</strong> Light winds expected all week — minimal wind effect on snow quality.<br><strong>Best days for big objectives:</strong> Sun, Mar 1 (clear + low wind).</div>
+  <div class="trip-overview"><strong>Weather pattern:</strong> cloud cover → snowfall.<br><strong>Multi-model snowfall:</strong> Models predict 6–38cm total (mean 21cm). See comparison table below.<br><strong>Temperature:</strong> Temperatures relatively steady — mountain highs -15 to 3°C.<br><strong>Wind:</strong> Light winds expected all week — minimal wind effect on snow quality.<br><strong>Best days for big objectives:</strong> Sun, Mar 1 (clear + low wind).</div>
 
   
     <div class="multi-model-section">
@@ -232,7 +280,7 @@
       <div class="mm-table-wrap">
         <table class="mm-table">
           <thead><tr><th>Date</th><th>HRDPS</th><th>GDPS</th><th>GFS</th><th>ECMWF</th><th>ICON</th><th>Mean</th><th>Confidence</th></tr></thead>
-          <tbody><tr><td class="mm-date">Sun, Mar 1</td><td style="color: var(--text-muted)">--</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)"><strong>0.0</strong></td><td><span style="color: var(--green)">High</span> <span style="color:var(--text-muted);font-size:0.75rem">(±0.0)</span></td></tr><tr><td class="mm-date">Mon, Mar 2</td><td style="color: var(--text-muted)">--</td><td style="color: #7ec4e8">0.6</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: #7ec4e8"><strong>0.1</strong></td><td><span style="color: var(--green)">High</span> <span style="color:var(--text-muted);font-size:0.75rem">(±0.6)</span></td></tr><tr><td class="mm-date">Tue, Mar 3</td><td style="color: var(--text-muted)">--</td><td style="color: #7ec4e8">3.5</td><td style="color: #7ec4e8">0.3</td><td style="color: #7ec4e8">0.1</td><td style="color: #4fa3d1; font-weight: 600">6.5</td><td style="color: #7ec4e8"><strong>2.6</strong></td><td><span style="color: var(--danger-moderate)">Mod</span> <span style="color:var(--text-muted);font-size:0.75rem">(±6.4)</span></td></tr><tr><td class="mm-date">Wed, Mar 4</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600">9.1</td><td style="color: #7ec4e8">1.2</td><td style="color: #4fa3d1; font-weight: 600">8.7</td><td style="color: #7ec4e8">1.9</td><td style="color: #4fa3d1; font-weight: 600"><strong>5.2</strong></td><td><span style="color: var(--danger-moderate)">Mod</span> <span style="color:var(--text-muted);font-size:0.75rem">(±7.9)</span></td></tr><tr><td class="mm-date">Thu, Mar 5</td><td style="color: var(--text-muted)">--</td><td style="color: #7ec4e8">2.4</td><td style="color: #7ec4e8">0.3</td><td style="color: #7ec4e8">0.8</td><td style="color: #4fa3d1; font-weight: 600">5.5</td><td style="color: #7ec4e8"><strong>2.2</strong></td><td><span style="color: var(--danger-moderate)">Mod</span> <span style="color:var(--text-muted);font-size:0.75rem">(±5.2)</span></td></tr><tr><td class="mm-date">Fri, Mar 6</td><td style="color: var(--text-muted)">--</td><td style="color: #48bb78; font-weight: 700">15.5</td><td style="color: #7ec4e8">3.9</td><td style="color: #4fa3d1; font-weight: 600">6.9</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600"><strong>8.8</strong></td><td><span style="color: var(--danger-high)">Low</span> <span style="color:var(--text-muted);font-size:0.75rem">(±11.6)</span></td></tr><tr><td class="mm-date">Sat, Mar 7</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600">7.1</td><td style="color: #7ec4e8">0.5</td><td style="color: #4fa3d1; font-weight: 600">11.6</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600"><strong>6.4</strong></td><td><span style="color: var(--danger-high)">Low</span> <span style="color:var(--text-muted);font-size:0.75rem">(±11.1)</span></td></tr><tr class="mm-total"><td class="mm-date"><strong>Total</strong></td><td style="color: var(--text-muted)"><strong>0.0</strong></td><td style="color: #48bb78; font-weight: 700"><strong>38.2</strong></td><td style="color: #4fa3d1; font-weight: 600"><strong>6.2</strong></td><td style="color: #48bb78; font-weight: 700"><strong>28.1</strong></td><td style="color: #4fa3d1; font-weight: 600"><strong>13.9</strong></td><td style="color: #48bb78; font-weight: 700"><strong>17.3</strong></td><td><span style="color:var(--text-muted)">±38.2</span></td></tr></tbody>
+          <tbody><tr><td class="mm-date">Sun, Mar 1</td><td style="color: var(--text-muted)">--</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)"><strong>0.0</strong></td><td><span style="color: var(--green)">High</span> <span style="color:var(--text-muted);font-size:0.75rem">(±0.0)</span></td></tr><tr><td class="mm-date">Mon, Mar 2</td><td style="color: var(--text-muted)">--</td><td style="color: #7ec4e8">0.6</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: var(--text-muted)">0.0</td><td style="color: #7ec4e8"><strong>0.1</strong></td><td><span style="color: var(--green)">High</span> <span style="color:var(--text-muted);font-size:0.75rem">(±0.6)</span></td></tr><tr><td class="mm-date">Tue, Mar 3</td><td style="color: var(--text-muted)">--</td><td style="color: #7ec4e8">3.5</td><td style="color: #7ec4e8">0.3</td><td style="color: #7ec4e8">0.1</td><td style="color: #4fa3d1; font-weight: 600">6.5</td><td style="color: #7ec4e8"><strong>2.6</strong></td><td><span style="color: var(--danger-moderate)">Mod</span> <span style="color:var(--text-muted);font-size:0.75rem">(±6.4)</span></td></tr><tr><td class="mm-date">Wed, Mar 4</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600">9.1</td><td style="color: #7ec4e8">1.2</td><td style="color: #4fa3d1; font-weight: 600">8.7</td><td style="color: #4fa3d1; font-weight: 600">5.2</td><td style="color: #4fa3d1; font-weight: 600"><strong>6.0</strong></td><td><span style="color: var(--danger-moderate)">Mod</span> <span style="color:var(--text-muted);font-size:0.75rem">(±7.9)</span></td></tr><tr><td class="mm-date">Thu, Mar 5</td><td style="color: var(--text-muted)">--</td><td style="color: #7ec4e8">2.4</td><td style="color: #7ec4e8">0.3</td><td style="color: #7ec4e8">0.8</td><td style="color: var(--text-muted)">0.0</td><td style="color: #7ec4e8"><strong>0.9</strong></td><td><span style="color: var(--green)">High</span> <span style="color:var(--text-muted);font-size:0.75rem">(±2.4)</span></td></tr><tr><td class="mm-date">Fri, Mar 6</td><td style="color: var(--text-muted)">--</td><td style="color: #48bb78; font-weight: 700">15.5</td><td style="color: #7ec4e8">3.9</td><td style="color: #4fa3d1; font-weight: 600">6.9</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600"><strong>8.8</strong></td><td><span style="color: var(--danger-high)">Low</span> <span style="color:var(--text-muted);font-size:0.75rem">(±11.6)</span></td></tr><tr><td class="mm-date">Sat, Mar 7</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600">7.1</td><td style="color: #7ec4e8">0.5</td><td style="color: #4fa3d1; font-weight: 600">11.6</td><td style="color: var(--text-muted)">--</td><td style="color: #4fa3d1; font-weight: 600"><strong>6.4</strong></td><td><span style="color: var(--danger-high)">Low</span> <span style="color:var(--text-muted);font-size:0.75rem">(±11.1)</span></td></tr><tr class="mm-total"><td class="mm-date"><strong>Total</strong></td><td style="color: var(--text-muted)"><strong>0.0</strong></td><td style="color: #48bb78; font-weight: 700"><strong>38.2</strong></td><td style="color: #4fa3d1; font-weight: 600"><strong>6.2</strong></td><td style="color: #48bb78; font-weight: 700"><strong>28.1</strong></td><td style="color: #4fa3d1; font-weight: 600"><strong>11.7</strong></td><td style="color: #48bb78; font-weight: 700"><strong>16.8</strong></td><td><span style="color:var(--text-muted)">±38.2</span></td></tr></tbody>
         </table>
       </div>
       <div class="mm-legend">
@@ -250,7 +298,7 @@
     <div class="cloud-strip-section">
       <h2>Cloud Cover &mdash; Week at a Glance</h2>
       <div class="cloud-strip-subtitle">Hourly cloud cover (%) &mdash; lower is better for visibility. Hours 0&ndash;23 local time.</div>
-      <div class="cloud-strip-wrap"><svg viewBox="0 0 784 220" style="width:100%;height:auto"><text x="75.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">0</text><text x="105.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">1</text><text x="135.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">2</text><text x="165.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">3</text><text x="195.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">4</text><text x="225.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">5</text><text x="255.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">6</text><text x="285.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">7</text><text x="315.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">8</text><text x="345.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">9</text><text x="375.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">10</text><text x="405.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">11</text><text x="435.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">12</text><text x="465.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">13</text><text x="495.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">14</text><text x="525.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">15</text><text x="555.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">16</text><text x="585.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">17</text><text x="615.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">18</text><text x="645.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">19</text><text x="675.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">20</text><text x="705.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">21</text><text x="735.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">22</text><text x="765.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">23</text><text x="55" y="35.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Sun 1</text><rect x="60" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="90" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="120" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="150" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="180" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="210" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="240" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="270" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="300" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="330" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="360" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.18)"/><rect x="390" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="420" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="450" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="480" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="510" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="540" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="570" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="600" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="630" y="18" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="660" y="18" width="29" height="26" rx="2" fill="rgba(156,163,175,0.32)"/><rect x="690" y="18" width="29" height="26" rx="2" fill="rgba(156,163,175,0.53)"/><rect x="720" y="18" width="29" height="26" rx="2" fill="rgba(156,163,175,0.48)"/><rect x="750" y="18" width="29" height="26" rx="2" fill="rgba(156,163,175,0.55)"/><text x="55" y="63.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Mon 2</text><rect x="60" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.38)"/><rect x="90" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.59)"/><rect x="120" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.35)"/><rect x="150" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.26)"/><rect x="180" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="210" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="240" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.37)"/><rect x="270" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.36)"/><rect x="300" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.23)"/><rect x="330" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.34)"/><rect x="360" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.44)"/><rect x="390" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.40)"/><rect x="420" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.34)"/><rect x="450" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.29)"/><rect x="480" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.29)"/><rect x="510" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><rect x="540" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><rect x="570" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><rect x="600" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><rect x="630" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><rect x="660" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.28)"/><rect x="690" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.26)"/><rect x="720" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.23)"/><rect x="750" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><text x="55" y="91.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Tue 3</text><rect x="60" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.38)"/><rect x="90" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.46)"/><rect x="120" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.52)"/><rect x="150" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.59)"/><rect x="180" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="210" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="240" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="270" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="300" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="330" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="360" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="390" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="420" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="450" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="480" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="510" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="540" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="600" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="630" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="660" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="690" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="720" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="750" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><text x="55" y="119.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Wed 4</text><rect x="60" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="90" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="120" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="150" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="180" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="210" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="240" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="270" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="300" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.60)"/><rect x="330" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.56)"/><rect x="360" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.52)"/><rect x="390" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.56)"/><rect x="420" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.60)"/><rect x="450" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="480" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="510" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="540" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.46)"/><rect x="600" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.26)"/><rect x="630" y="102" width="29" height="26" rx="2" fill="rgba(234,179,8,0.33)"/><rect x="660" y="102" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="690" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.29)"/><rect x="720" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.41)"/><rect x="750" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.48)"/><text x="55" y="147.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Thu 5</text><rect x="60" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.56)"/><rect x="90" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="120" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="150" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="180" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="210" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="240" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.59)"/><rect x="270" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.56)"/><rect x="300" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.59)"/><rect x="330" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="360" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="390" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="420" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.57)"/><rect x="450" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.55)"/><rect x="480" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.57)"/><rect x="510" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="540" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="600" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="630" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="660" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="690" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="720" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="750" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><text x="55" y="175.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Fri 6</text><rect x="60" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="90" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="120" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.57)"/><rect x="150" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.56)"/><rect x="180" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.57)"/><rect x="210" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="240" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="270" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="300" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="330" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="360" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="390" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="420" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="450" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="480" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="510" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="540" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="600" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="630" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="660" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="690" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="720" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="750" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><text x="55" y="203.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Sat 7</text><rect x="60" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="90" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="120" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="150" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="180" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="210" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="240" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="270" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="300" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="330" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="360" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.60)"/><rect x="390" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="420" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="450" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="480" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="510" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="540" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.36)"/><rect x="600" y="186" width="29" height="26" rx="2" fill="rgba(234,179,8,0.29)"/><rect x="630" y="186" width="29" height="26" rx="2" fill="rgba(234,179,8,0.14)"/><rect x="660" y="186" width="29" height="26" rx="2" fill="rgba(72,187,120,0.35)"/><rect x="690" y="186" width="29" height="26" rx="2" fill="rgba(72,187,120,0.33)"/><rect x="720" y="186" width="29" height="26" rx="2" fill="rgba(72,187,120,0.38)"/><rect x="750" y="186" width="29" height="26" rx="2" fill="rgba(234,179,8,0.24)"/></svg></div>
+      <div class="cloud-strip-wrap"><svg viewBox="0 0 784 220" style="width:100%;height:auto"><text x="75.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">0</text><text x="105.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">1</text><text x="135.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">2</text><text x="165.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">3</text><text x="195.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">4</text><text x="225.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">5</text><text x="255.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">6</text><text x="285.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">7</text><text x="315.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">8</text><text x="345.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">9</text><text x="375.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">10</text><text x="405.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">11</text><text x="435.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">12</text><text x="465.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">13</text><text x="495.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">14</text><text x="525.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">15</text><text x="555.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">16</text><text x="585.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">17</text><text x="615.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">18</text><text x="645.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">19</text><text x="675.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">20</text><text x="705.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">21</text><text x="735.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">22</text><text x="765.0" y="11" text-anchor="middle" fill="#8899aa" font-size="8">23</text><text x="55" y="35.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Sun 1</text><rect x="60" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="90" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="120" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="150" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="180" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="210" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="240" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="270" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.33)"/><rect x="300" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="330" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="360" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.15)"/><rect x="390" y="18" width="29" height="26" rx="2" fill="rgba(234,179,8,0.24)"/><rect x="420" y="18" width="29" height="26" rx="2" fill="rgba(234,179,8,0.10)"/><rect x="450" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.15)"/><rect x="480" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="510" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="540" y="18" width="29" height="26" rx="2" fill="rgba(72,187,120,0.12)"/><rect x="570" y="18" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="600" y="18" width="29" height="26" rx="2" fill="rgba(156,163,175,0.20)"/><rect x="630" y="18" width="29" height="26" rx="2" fill="rgba(156,163,175,0.26)"/><rect x="660" y="18" width="29" height="26" rx="2" fill="rgba(156,163,175,0.34)"/><rect x="690" y="18" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="720" y="18" width="29" height="26" rx="2" fill="rgba(234,179,8,0.23)"/><rect x="750" y="18" width="29" height="26" rx="2" fill="rgba(234,179,8,0.23)"/><text x="55" y="63.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Mon 2</text><rect x="60" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.38)"/><rect x="90" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.35)"/><rect x="120" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.32)"/><rect x="150" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="180" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.38)"/><rect x="210" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.28)"/><rect x="240" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.32)"/><rect x="270" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.40)"/><rect x="300" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.38)"/><rect x="330" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.40)"/><rect x="360" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="390" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.25)"/><rect x="420" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><rect x="450" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.38)"/><rect x="480" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.47)"/><rect x="510" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.56)"/><rect x="540" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.35)"/><rect x="600" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.32)"/><rect x="630" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.17)"/><rect x="660" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.27)"/><rect x="690" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.35)"/><rect x="720" y="46" width="29" height="26" rx="2" fill="rgba(156,163,175,0.31)"/><rect x="750" y="46" width="29" height="26" rx="2" fill="rgba(234,179,8,0.32)"/><text x="55" y="91.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Tue 3</text><rect x="60" y="74" width="29" height="26" rx="2" fill="rgba(234,179,8,0.19)"/><rect x="90" y="74" width="29" height="26" rx="2" fill="rgba(72,187,120,0.35)"/><rect x="120" y="74" width="29" height="26" rx="2" fill="rgba(234,179,8,0.17)"/><rect x="150" y="74" width="29" height="26" rx="2" fill="rgba(234,179,8,0.28)"/><rect x="180" y="74" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="210" y="74" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="240" y="74" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="270" y="74" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="300" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.34)"/><rect x="330" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.50)"/><rect x="360" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="390" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="420" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="450" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="480" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="510" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="540" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="600" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="630" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="660" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="690" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="720" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="750" y="74" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><text x="55" y="119.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Wed 4</text><rect x="60" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="90" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="120" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="150" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="180" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="210" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="240" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="270" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="300" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="330" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="360" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="390" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="420" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="450" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.60)"/><rect x="480" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.57)"/><rect x="510" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.53)"/><rect x="540" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.50)"/><rect x="570" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.47)"/><rect x="600" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.44)"/><rect x="630" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.41)"/><rect x="660" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.32)"/><rect x="690" y="102" width="29" height="26" rx="2" fill="rgba(156,163,175,0.25)"/><rect x="720" y="102" width="29" height="26" rx="2" fill="rgba(234,179,8,0.38)"/><rect x="750" y="102" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><text x="55" y="147.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Thu 5</text><rect x="60" y="130" width="29" height="26" rx="2" fill="rgba(234,179,8,0.39)"/><rect x="90" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.20)"/><rect x="120" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.28)"/><rect x="150" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.35)"/><rect x="180" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.43)"/><rect x="210" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.40)"/><rect x="240" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.36)"/><rect x="270" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.34)"/><rect x="300" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.38)"/><rect x="330" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.43)"/><rect x="360" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.47)"/><rect x="390" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.50)"/><rect x="420" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.52)"/><rect x="450" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.55)"/><rect x="480" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.32)"/><rect x="510" y="130" width="29" height="26" rx="2" fill="rgba(234,179,8,0.35)"/><rect x="540" y="130" width="29" height="26" rx="2" fill="rgba(234,179,8,0.24)"/><rect x="570" y="130" width="29" height="26" rx="2" fill="rgba(234,179,8,0.25)"/><rect x="600" y="130" width="29" height="26" rx="2" fill="rgba(234,179,8,0.27)"/><rect x="630" y="130" width="29" height="26" rx="2" fill="rgba(234,179,8,0.29)"/><rect x="660" y="130" width="29" height="26" rx="2" fill="rgba(234,179,8,0.35)"/><rect x="690" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.23)"/><rect x="720" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.36)"/><rect x="750" y="130" width="29" height="26" rx="2" fill="rgba(156,163,175,0.46)"/><text x="55" y="175.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Fri 6</text><rect x="60" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.56)"/><rect x="90" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="120" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="150" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="180" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="210" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.59)"/><rect x="240" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.55)"/><rect x="270" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.48)"/><rect x="300" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.50)"/><rect x="330" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.53)"/><rect x="360" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.55)"/><rect x="390" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.28)"/><rect x="420" y="158" width="29" height="26" rx="2" fill="rgba(234,179,8,0.30)"/><rect x="450" y="158" width="29" height="26" rx="2" fill="rgba(234,179,8,0.16)"/><rect x="480" y="158" width="29" height="26" rx="2" fill="rgba(234,179,8,0.21)"/><rect x="510" y="158" width="29" height="26" rx="2" fill="rgba(234,179,8,0.30)"/><rect x="540" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.28)"/><rect x="570" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="600" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="630" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="660" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="690" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="720" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="750" y="158" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><text x="55" y="203.0" text-anchor="end" fill="#e2e8f0" font-size="9" font-weight="500">Sat 7</text><rect x="60" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="90" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="120" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="150" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="180" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="210" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="240" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="270" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="300" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="330" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="360" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.60)"/><rect x="390" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.62)"/><rect x="420" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.64)"/><rect x="450" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="480" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="510" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="540" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.65)"/><rect x="570" y="186" width="29" height="26" rx="2" fill="rgba(156,163,175,0.36)"/><rect x="600" y="186" width="29" height="26" rx="2" fill="rgba(234,179,8,0.29)"/><rect x="630" y="186" width="29" height="26" rx="2" fill="rgba(234,179,8,0.14)"/><rect x="660" y="186" width="29" height="26" rx="2" fill="rgba(72,187,120,0.35)"/><rect x="690" y="186" width="29" height="26" rx="2" fill="rgba(72,187,120,0.33)"/><rect x="720" y="186" width="29" height="26" rx="2" fill="rgba(72,187,120,0.38)"/><rect x="750" y="186" width="29" height="26" rx="2" fill="rgba(234,179,8,0.24)"/></svg></div>
       <div class="cloud-strip-legend">
         <span><span class="cloud-legend-swatch" style="background:rgba(72,187,120,0.35)"></span>Clear (&lt;30%)</span>
         <span><span class="cloud-legend-swatch" style="background:rgba(234,179,8,0.3)"></span>Variable (30&ndash;70%)</span>
@@ -262,8 +310,8 @@
 
   
     <div class="trip-planner-section">
-      <h2>Trip Planner (ATAR Framework)</h2>
-      <div class="tp-subtitle">Avalanche conditions auto-filled from forecast data. Fill in group, route, and timing plans at morning briefing.</div>
+      <h2>Daily Terrain Guide</h2>
+      <div class="tp-subtitle">Auto-generated from forecast data. Terrain, route, and timing recommendations update with each build.</div>
       <div class="tp-tabs">
         <button class="tp-tab active" onclick="showPlan(0)">Sun 01</button>
           <button class="tp-tab" onclick="showPlan(1)">Mon 02</button>
@@ -299,7 +347,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Weather summary</span>
-                <span class="tp-value">Overcast. 7 km/h E ridgetop wind. Treeline temp ~-1°C. Freezing level 1746m.</span>
+                <span class="tp-value">Partly cloudy. 7 km/h E ridgetop wind. Treeline temp ~-1°C. Freezing level 1746m.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Visibility</span>
@@ -313,49 +361,27 @@
           </div>
 
           <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">Open terrain — clear skies suit ridge tours with big views</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">Alpine / Treeline &mdash; Alpine: good conditions for above-treeline objectives. All elevation bands accessible.</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">Light winds — all aspects reasonable.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -365,15 +391,15 @@
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">8:30–9:00am</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">2:30pm</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">Normal timing. Morning starts offer best snow surfaces before any afternoon warming.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -381,6 +407,26 @@
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="tp-panel" id="tp-panel-1" style="display:none">
@@ -407,7 +453,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Weather summary</span>
-                <span class="tp-value">Overcast. 7 km/h SE ridgetop wind. Treeline temp ~2°C. Freezing level 2208m.</span>
+                <span class="tp-value">Overcast. 8 km/h SE ridgetop wind. Treeline temp ~3°C. Freezing level 2362m.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Visibility</span>
@@ -421,49 +467,27 @@
           </div>
 
           <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">Mixed terrain — gladed trees offer variety and wind protection</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">Below treeline / Treeline &mdash; Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions.</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">Warm temps — watch for wet loose on solar aspects. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -473,15 +497,15 @@
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">Before 8:30am</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">1:00pm</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">Start early — south aspects will deteriorate by early afternoon. Plan to be off steep solar aspects by 1pm.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -489,6 +513,26 @@
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="tp-panel" id="tp-panel-2" style="display:none">
@@ -515,7 +559,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Weather summary</span>
-                <span class="tp-value">Snow. 6.5cm snow expected. 7 km/h SE ridgetop wind. Treeline temp ~-1°C. Freezing level 1746m.</span>
+                <span class="tp-value">Snow. 6.5cm snow expected. 7 km/h SE ridgetop wind. Treeline temp ~0°C. Freezing level 1900m.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Visibility</span>
@@ -529,49 +573,27 @@
           </div>
 
           <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">Mixed terrain — gladed trees offer variety and wind protection</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">Below treeline / Treeline &mdash; Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions.</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">Light winds — all aspects reasonable.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -581,15 +603,15 @@
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">8:30–9:00am</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">2:30pm</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">Normal timing. Morning starts offer best snow surfaces before any afternoon warming.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -597,6 +619,26 @@
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="tp-panel" id="tp-panel-3" style="display:none">
@@ -623,7 +665,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Weather summary</span>
-                <span class="tp-value">Thunderstorm. 1.9cm snow expected. Treeline temp ~1°C. Freezing level 2054m.</span>
+                <span class="tp-value">Light snow showers. 5.2cm snow expected. Treeline temp ~1°C. Freezing level 2054m.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Visibility</span>
@@ -631,25 +673,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Expected red flags</span>
-                <span class="tp-value tp-redflag">Warm temps — watch for wet loose on solar aspects. Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                <span class="tp-value tp-redflag">New snow loading on existing weak layers. Warm temps — watch for wet loose on solar aspects. Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
             </div>
           </div>
@@ -658,28 +682,24 @@
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">Mixed terrain — gladed trees offer variety and wind protection</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">Below treeline / Treeline &mdash; Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions.</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">Warm temps — watch for wet loose on solar aspects. Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -689,15 +709,15 @@
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">8:30–9:00am</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">2:30pm</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">Normal timing. Morning starts offer best snow surfaces before any afternoon warming.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -705,6 +725,26 @@
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="tp-panel" id="tp-panel-4" style="display:none">
@@ -731,7 +771,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Weather summary</span>
-                <span class="tp-value">Light snow showers. 5.5cm snow expected. 8 km/h S ridgetop wind. Treeline temp ~-1°C. Freezing level 1746m.</span>
+                <span class="tp-value">Light snow showers. 6 km/h SW ridgetop wind. Treeline temp ~1°C. Freezing level 2054m.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Visibility</span>
@@ -739,25 +779,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Expected red flags</span>
-                <span class="tp-value tp-redflag">New snow loading on existing weak layers. Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                <span class="tp-value tp-redflag">Warm temps — watch for wet loose on solar aspects. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
             </div>
           </div>
@@ -766,28 +788,24 @@
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">Mixed terrain — gladed trees offer variety and wind protection</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">Below treeline / Treeline &mdash; Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions.</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">Warm temps — watch for wet loose on solar aspects. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -797,15 +815,15 @@
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">8:30–9:00am</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">2:30pm</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">Normal timing. Morning starts offer best snow surfaces before any afternoon warming.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -813,6 +831,26 @@
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="tp-panel" id="tp-panel-5" style="display:none">
@@ -839,7 +877,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Weather summary</span>
-                <span class="tp-value">Light snow showers. 3.8cm snow expected. 9 km/h S ridgetop wind. Treeline temp ~-2°C. Freezing level 1592m.</span>
+                <span class="tp-value">Light snow showers. 2.6cm snow expected. 12 km/h SW ridgetop wind. Treeline temp ~3°C. Freezing level 2362m.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Visibility</span>
@@ -847,25 +885,7 @@
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Expected red flags</span>
-                <span class="tp-value tp-redflag">New snow loading on existing weak layers. Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                <span class="tp-value tp-redflag">Warm temps — watch for wet loose on solar aspects. Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
             </div>
           </div>
@@ -874,28 +894,24 @@
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">Mixed terrain — gladed trees offer variety and wind protection</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">Below treeline / Treeline &mdash; Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions.</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">Warm temps — watch for wet loose on solar aspects. Poor visibility — limited ability to spot overhead hazards. Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -905,15 +921,15 @@
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">Before 8:30am</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">1:00pm</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">Start early — south aspects will deteriorate by early afternoon. Plan to be off steep solar aspects by 1pm.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -921,6 +937,26 @@
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="tp-panel" id="tp-panel-6" style="display:none">
@@ -961,49 +997,27 @@
           </div>
 
           <div class="tp-category">
-            <div class="tp-cat-header">Group Plan</div>
-            <div class="tp-grid">
-              <div class="tp-row tp-full">
-                <span class="tp-label">Group objective</span>
-                <span class="tp-value tp-editable">&mdash;</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Communication plan</span>
-                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Emergency plan</span>
-                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="tp-category">
             <div class="tp-cat-header">Route Plan</div>
             <div class="tp-grid">
               <div class="tp-row tp-full">
-                <span class="tp-label">Ascent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Terrain type</span>
+                <span class="tp-value">Mixed terrain — gladed trees offer variety and wind protection</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Descent route</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Elevation band</span>
+                <span class="tp-value">Below treeline / Treeline &mdash; Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions.</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Terrain features</span>
-                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+                <span class="tp-label">Favourable aspects</span>
+                <span class="tp-value">Light winds — all aspects reasonable.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail-out conditions</span>
+                <span class="tp-value tp-redflag">Persistent weak layers (Feb 13 SH, Jan 28 crust).</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Safe zones</span>
                 <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Decision points</span>
-                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Bail out</span>
-                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
               </div>
             </div>
           </div>
@@ -1013,15 +1027,15 @@
             <div class="tp-grid">
               <div class="tp-row">
                 <span class="tp-label">Departure</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">8:30–9:00am</span>
               </div>
               <div class="tp-row">
                 <span class="tp-label">Turnaround time</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-value">2:30pm</span>
               </div>
               <div class="tp-row tp-full">
-                <span class="tp-label">Timing plan</span>
-                <span class="tp-value tp-editable">&mdash;</span>
+                <span class="tp-label">Timing rationale</span>
+                <span class="tp-value">Normal timing. Morning starts offer best snow surfaces before any afternoon warming.</span>
               </div>
               <div class="tp-row tp-full">
                 <span class="tp-label">Elevation plan</span>
@@ -1029,6 +1043,26 @@
               </div>
             </div>
           </div>
+
+          <details class="tp-group-details">
+            <summary class="tp-group-summary">Group Plan (static reference)</summary>
+            <div class="tp-category" style="margin-top:0.5rem">
+              <div class="tp-grid">
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Group objective</span>
+                  <span class="tp-value tp-editable">&mdash;</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Communication plan</span>
+                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+                </div>
+                <div class="tp-row tp-full">
+                  <span class="tp-label">Emergency plan</span>
+                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
       </div>
     </div>
@@ -1044,7 +1078,7 @@
       <div style="margin-top:0.75rem"><h3 class="avy-section-title">Avalanche Summary</h3><div class="snowpack-text"><p>Poor visibility restricted field observations on Wednesday and Thursday, but natural avalanche activity has likely occurred from the ongoing strong wind and heavy loading during the storm.Very large natural avalanches (size 2 to 3) and human-triggered persistent slabs ( size 1.5 to 2.5) were reported continously with some being accidental or remote (from a distance) on all aspects and elevations, even from low-angle slopes.</p></div></div>
       <div style="margin-top:0.75rem"><h3 class="avy-section-title">Snowpack Summary</h3><div class="snowpack-text"><p>The latest storm added 25 to 40 cm of additional new snow to the complex snowpack, along with strong to extreme westerly winds.Three persistent weak layers of concern may be found in the upper 170 cm of the snowpack:50 to 70+ cm down is a layer of surface hoar in sheltered areas, or a melt-freeze crust on sun-exposed slopes from mid-February.80 to 120+ cm down is the early-February layer of surface hoar in wind-sheltered terrain and a crust on sun-exposed slopes.100 to 140 cm down is the late-January layer of surface hoar and facets over a melt-freeze crust.All of these persistent layers have continued to produce large avalanches in the region.The remainder of the snowpack below is well consolidated.</p></div></div>
       <div style="margin-top:0.75rem"><h3 class="avy-section-title">Weather Summary</h3><div class="snowpack-text"><p>Thursday NightCloudy. 10 to 25 cm of snow. 60 km/h southwest ridgetop wind.</p><p>Treeline temperature -6 °C. Freezing level 1500 m.FridayCloudy. 10 to 15 cm of snow.</p><p>50 km/h west ridgetop wind. Treeline temperature -6 °C. Freezing level 1500 m.SaturdayA mix of sun and clouds.</p><p>2 to 4 cm of snow. 40 km/h west ridgetop wind. Treeline temperature -8 °C.SundayMostly sunny.</p><p>40 km/h west ridgetop wind. Treeline temperature -4 °C. Freezing level 1800 m.</p><p>More details can be found in the Mountain Weather Forecast.</p></div></div>
-      <div style="margin-top:0.75rem"><h3 class="avy-section-title">Snowpack Evolution</h3><div class="snowpack-evolution"><strong>Snowpack Evolution Through the Week:</strong><br>New snow loading on Tue, Mar 3, Thu, Mar 5, Fri, Mar 6 will add stress to existing weak layers.<br>Warmer temps on Mon, Mar 2 will promote settlement and bonding of recent snow.<br>The Feb 13 surface hoar and Jan 28 crust/facet layers remain buried in the snowpack. New load from storm cycles may reactivate these interfaces, particularly on steep north-facing terrain above treeline. Monitor Avalanche Canada bulletins daily for updated assessments.</div></div>
+      <div style="margin-top:0.75rem"><h3 class="avy-section-title">Snowpack Evolution</h3><div class="snowpack-evolution"><strong>Snowpack Evolution Through the Week:</strong><br>New snow loading on Tue, Mar 3, Wed, Mar 4 will add stress to existing weak layers.<br>Warmer temps on Mon, Mar 2, Thu, Mar 5 will promote settlement and bonding of recent snow.<br>The Feb 13 surface hoar and Jan 28 crust/facet layers remain buried in the snowpack. New load from storm cycles may reactivate these interfaces, particularly on steep north-facing terrain above treeline. Monitor Avalanche Canada bulletins daily for updated assessments.</div></div>
       <div style="margin-top:0.75rem"><h3 class="avy-section-title">Avalanche Problems</h3><div class="avy-problems-grid">
           <div class="avy-problem-card"><div class="avy-problem-header">Storm slab</div><div class="avy-problem-meta"><span>Likelihood: <strong>veryLikely_likely</strong></span><span>Size: <strong>1.0-2.5</strong></span></div><div class="avy-problem-details"><div>Elevations: Treeline, Alpine, Below Treeline</div><div>Aspects: Northeast, East, Northwest, North, Southeast, s, Southwest, West</div></div><div class="avy-problem-comment">Additional snow, combined with strong wind, will keep building fresh reactive storm and wind slabs. Storm slabs in motion may step down to deeper layers, resulting in large avalanches.</div></div>
           <div class="avy-problem-card"><div class="avy-problem-header">Persistent slab</div><div class="avy-problem-meta"><span>Likelihood: <strong>likely_possible</strong></span><span>Size: <strong>1.0-3.0</strong></span></div><div class="avy-problem-details"><div>Elevations: Below Treeline, Treeline, Alpine</div><div>Aspects: North, Northeast, East, Southeast, West, Northwest, s, Southwest</div></div><div class="avy-problem-comment">Three problematic persistent weak layers exist in the upper 170 cm of the snowpack. Recent snow is adding load to these layers, and large destructive avalanches is possible. Remote trigger and release on low-angle slopes is also likely.</div></div>
@@ -1089,13 +1123,13 @@
         <small>Multi-model point forecasts (HRDPS, RDPS, GFS, ECMWF)</small>
       </a>
     </div>
-    <div class="last-updated">Last updated: February 27, 2026 at 07:02</div>
+    <div class="last-updated">Last updated: February 27, 2026 at 08:27</div>
     <div class="auto-note">Auto-generated from live APIs. Always verify with primary sources before making terrain decisions.</div>
   </footer>
 </div>
 
 <script>
-const days = [{"date": "Sun, Mar 1", "dayOfWeek": "Sunday", "icon": "☁️", "mtHigh": "-1", "mtLow": "-8", "valHigh": "5", "valLow": "-13", "snow": "None", "wind": "7 km/h E", "summary": "Overcast", "freezing": "1746m", "am": {"temp": "-7°C", "wind": "5 km/h E", "snow": "0cm", "sky": "Mainly clear"}, "pm": {"temp": "-3°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Clear sky"}, "night": {"temp": "-3°C", "wind": "7 km/h E", "snow": "0cm", "sky": "Overcast"}, "valley": "A mix of sun and cloud. High 6. Clear. Low minus 4.", "metar": "CYRV (2026-02-27T15:01:00 UTC): — BKN at 2700ft, BKN at 3200ft, OVC at 4400ft — vis 11.3km — wind -- 7 km/h — QNH 1014.0 hPa — wx: -RA", "backcountry": "Excellent visibility for alpine objectives. Good day for bigger terrain. No new snow. Look for wind-sheltered aspects where soft snow remains. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: Good conditions for above-treeline objectives. Treeline: Good zone for varied terrain. Below treeline: Protected skiing with good visibility in trees. <br><strong>Terrain:</strong> Clear skies suit open terrain and ridge tours with big views. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Avalanche Canada danger: Alpine 3 - Considerable, Treeline 3 - Considerable, Below treeline 3 - Considerable. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0, 0, 69, 78, 92, 89, 93], "modelSnow": {"HRDPS": null, "GDPS": 0.0, "GFS": 0.0, "ECMWF": 0.0, "ICON": 0.0}, "modelMean": 0.0}, {"date": "Mon, Mar 2", "dayOfWeek": "Monday", "icon": "☁️", "mtHigh": "2", "mtLow": "-5", "valHigh": "5", "valLow": "-4", "snow": "None", "wind": "7 km/h SE", "summary": "Overcast", "freezing": "2208m", "am": {"temp": "-5°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Overcast"}, "pm": {"temp": "0°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Partly cloudy"}, "night": {"temp": "1°C", "wind": "6 km/h S", "snow": "0cm", "sky": "Overcast"}, "valley": "A mix of sun and cloud. High 7. Cloudy periods. Low minus 2.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. No new snow. Look for wind-sheltered aspects where soft snow remains. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun; ski early or late for best snow. <br><strong>Elevation band:</strong> Alpine: Poor visibility likely — limited value above treeline. Treeline: Good zone for varied terrain. Below treeline: Protected skiing with good visibility in trees. <br><strong>Terrain:</strong> Mixed terrain works well. Gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Avalanche Canada danger: Alpine 3 - Considerable, Treeline 3 - Considerable, Below treeline 3 - Considerable. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [82, 96, 80, 74, 69, 68, 66, 65, 72, 79, 86, 83, 79, 76, 76, 77, 77, 77, 77, 77, 75, 74, 72, 77], "modelSnow": {"HRDPS": null, "GDPS": 0.6, "GFS": 0.0, "ECMWF": 0.0, "ICON": 0.0}, "modelMean": 0.1}, {"date": "Tue, Mar 3", "dayOfWeek": "Tuesday", "icon": "🌨️", "mtHigh": "-1", "mtLow": "-2", "valHigh": "6", "valLow": "0", "snow": "6.5cm", "wind": "7 km/h SE", "summary": "Snow, 6.5cm snow", "freezing": "1746m", "am": {"temp": "-2°C", "wind": "7 km/h SE", "snow": "0.5cm", "sky": "Snow"}, "pm": {"temp": "-1°C", "wind": "7 km/h S", "snow": "3.6cm", "sky": "Snow"}, "night": {"temp": "-1°C", "wind": "6 km/h SE", "snow": "2.4cm", "sky": "Light snow"}, "valley": "A mix of sun and cloud. High 6. Rain or snow. Low plus 1.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Fresh snow (6.5cm) for good turns in sheltered terrain. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: Poor visibility likely — limited value above treeline. Treeline: Flat light but manageable with terrain features for reference. Below treeline: Protected skiing with good visibility in trees. <br><strong>Terrain:</strong> Mixed terrain works well. Gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "New storm slab forming with fresh snow loading. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [82, 87, 91, 96, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], "modelSnow": {"HRDPS": null, "GDPS": 3.5, "GFS": 0.3, "ECMWF": 0.1, "ICON": 6.5}, "modelMean": 2.6}, {"date": "Wed, Mar 4", "dayOfWeek": "Wednesday", "icon": "⛈️", "mtHigh": "1", "mtLow": "-2", "valHigh": "7", "valLow": "4", "snow": "1.9cm", "wind": "5 km/h S", "summary": "Thunderstorm, 1.9cm snow", "freezing": "2054m", "am": {"temp": "-1°C", "wind": "3 km/h SE", "snow": "0cm", "sky": "Thunderstorm"}, "pm": {"temp": "1°C", "wind": "5 km/h SW", "snow": "0cm", "sky": "Thunderstorm"}, "night": {"temp": "-1°C", "wind": "5 km/h S", "snow": "0cm", "sky": "Light snow showers"}, "valley": "Periods of snow or rain. High plus 4. Cloudy with 70 percent chance of rain showers or flurries. Low minus 1.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Light snow (1.9cm). Existing surfaces refreshed. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun; ski early or late for best snow. <br><strong>Elevation band:</strong> Alpine: Poor visibility likely — limited value above treeline. Treeline: Good zone for varied terrain. Below treeline: Protected skiing with good visibility in trees. <br><strong>Terrain:</strong> Mixed terrain works well. Gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [100, 100, 100, 100, 100, 100, 100, 100, 97, 94, 91, 94, 97, 100, 100, 100, 100, 87, 74, 61, 69, 76, 84, 89], "modelSnow": {"HRDPS": null, "GDPS": 9.1, "GFS": 1.2, "ECMWF": 8.7, "ICON": 1.9}, "modelMean": 5.2}, {"date": "Thu, Mar 5", "dayOfWeek": "Thursday", "icon": "🌨️", "mtHigh": "-1", "mtLow": "-3", "valHigh": "7", "valLow": "2", "snow": "5.5cm", "wind": "8 km/h S", "summary": "Light snow showers, 5.5cm snow", "freezing": "1746m", "am": {"temp": "-2°C", "wind": "7 km/h S", "snow": "0.3cm", "sky": "Light snow showers"}, "pm": {"temp": "-1°C", "wind": "8 km/h S", "snow": "2.8cm", "sky": "Light snow"}, "night": {"temp": "-2°C", "wind": "7 km/h S", "snow": "2.5cm", "sky": "Light snow showers"}, "valley": "Cloudy with 40 percent chance of flurries or rain showers. High plus 5.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Fresh snow (5.5cm) for good turns in sheltered terrain. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: Poor visibility likely — limited value above treeline. Treeline: Flat light but manageable with terrain features for reference. Below treeline: Protected skiing with good visibility in trees. <br><strong>Terrain:</strong> Mixed terrain works well. Gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "New storm slab forming with fresh snow loading. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [94, 99, 99, 100, 100, 98, 96, 94, 96, 98, 100, 98, 95, 93, 95, 98, 100, 100, 100, 100, 100, 100, 100, 100], "modelSnow": {"HRDPS": null, "GDPS": 2.4, "GFS": 0.3, "ECMWF": 0.8, "ICON": 5.5}, "modelMean": 2.2}, {"date": "Fri, Mar 6", "dayOfWeek": "Friday", "icon": "🌨️", "mtHigh": "-2", "mtLow": "-5", "valHigh": "6", "valLow": "-2", "snow": "3.8cm", "wind": "9 km/h S", "summary": "Light snow showers, 3.8cm snow", "freezing": "1592m", "am": {"temp": "-4°C", "wind": "9 km/h S", "snow": "1.2cm", "sky": "Snow"}, "pm": {"temp": "-3°C", "wind": "9 km/h S", "snow": "1.1cm", "sky": "Snow"}, "night": {"temp": "-5°C", "wind": "8 km/h W", "snow": "1.1cm", "sky": "Snow"}, "valley": "Valley: 6/-2°C, Snow", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Light snow (3.8cm). Existing surfaces refreshed. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: Poor visibility likely — limited value above treeline. Treeline: Good zone for varied terrain. Below treeline: Protected skiing with good visibility in trees. <br><strong>Terrain:</strong> Mixed terrain works well. Gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "New storm slab forming with fresh snow loading. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [100, 100, 95, 94, 95, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100], "modelSnow": {"HRDPS": null, "GDPS": 15.5, "GFS": 3.9, "ECMWF": 6.9, "ICON": null}, "modelMean": 8.8}, {"date": "Sat, Mar 7", "dayOfWeek": "Saturday", "icon": "🌨️", "mtHigh": "-4", "mtLow": "-15", "valHigh": "5", "valLow": "-10", "snow": "0.5cm", "wind": "8 km/h NW", "summary": "Light snow, 0.5cm snow", "freezing": "1285m", "am": {"temp": "-8°C", "wind": "7 km/h W", "snow": "0cm", "sky": "Light drizzle"}, "pm": {"temp": "-5°C", "wind": "8 km/h W", "snow": "0cm", "sky": "Overcast"}, "night": {"temp": "-14°C", "wind": "7 km/h NE", "snow": "0cm", "sky": "Fog"}, "valley": "A mix of sun and cloud. High 6. UV index 2 or low. Cloudy periods. Low minus 2.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. Light snow (0.5cm). Existing surfaces refreshed. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: Poor visibility likely — limited value above treeline. Treeline: Good zone for varied terrain. Below treeline: Protected skiing with good visibility in trees. <br><strong>Terrain:</strong> Mixed terrain works well. Gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [100, 100, 100, 100, 100, 100, 100, 100, 99, 98, 97, 98, 99, 100, 100, 100, 100, 81, 55, 35, 25, 22, 28, 49], "modelSnow": {"HRDPS": null, "GDPS": 7.1, "GFS": 0.5, "ECMWF": 11.6, "ICON": null}, "modelMean": 6.4}];
+const days = [{"date": "Sun, Mar 1", "dayOfWeek": "Sunday", "icon": "⛅", "mtHigh": "-1", "mtLow": "-8", "valHigh": "5", "valLow": "-13", "snow": "None", "wind": "7 km/h E", "summary": "Partly cloudy", "freezing": "1746m", "am": {"temp": "-7°C", "wind": "5 km/h E", "snow": "0cm", "sky": "Partly cloudy"}, "pm": {"temp": "-2°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Partly cloudy"}, "night": {"temp": "-3°C", "wind": "7 km/h E", "snow": "0cm", "sky": "Partly cloudy"}, "valley": "A mix of sun and cloud. High 6. Clear. Low minus 4.", "metar": "CYRV (2026-02-27T16:00:00 UTC): — BKN at 1700ft, BKN at 2200ft, BKN at 2800ft, OVC at 4400ft — vis 2.0km — wind -- 4 km/h — QNH 1014.0 hPa — wx: -RA BR", "backcountry": "Variable visibility through the day. No new snow. Look for wind-sheltered aspects where soft snow remains. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: good conditions for above-treeline objectives. All elevation bands accessible. <br><strong>Terrain:</strong> Open terrain — clear skies suit ridge tours with big views. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Avalanche Canada danger: Alpine 3 - Considerable, Treeline 3 - Considerable, Below treeline 3 - Considerable. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [0, 0, 0, 0, 0, 0, 0, 22, 0, 0, 3, 48, 30, 3, 0, 0, 0, 69, 70, 74, 79, 68, 47, 47], "modelSnow": {"HRDPS": null, "GDPS": 0.0, "GFS": 0.0, "ECMWF": 0.0, "ICON": 0.0}, "modelMean": 0.0}, {"date": "Mon, Mar 2", "dayOfWeek": "Monday", "icon": "☁️", "mtHigh": "3", "mtLow": "-5", "valHigh": "5", "valLow": "-4", "snow": "None", "wind": "8 km/h SE", "summary": "Overcast", "freezing": "2362m", "am": {"temp": "-5°C", "wind": "7 km/h SE", "snow": "0cm", "sky": "Overcast"}, "pm": {"temp": "2°C", "wind": "8 km/h SE", "snow": "0cm", "sky": "Overcast"}, "night": {"temp": "1°C", "wind": "4 km/h SW", "snow": "0cm", "sky": "Partly cloudy"}, "valley": "A mix of sun and cloud. High 7. Cloudy periods. Low minus 2.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. No new snow. Look for wind-sheltered aspects where soft snow remains. Warm temps — watch for wet loose on steep south-facing terrain in afternoon. Start early. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun. <br><strong>Elevation band:</strong> Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions. <br><strong>Terrain:</strong> Mixed terrain — gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Start early — south aspects will deteriorate by early afternoon. Plan to be off steep solar aspects by 1pm. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Avalanche Canada danger: Alpine 3 - Considerable, Treeline 3 - Considerable, Below treeline 3 - Considerable. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [82, 80, 78, 69, 67, 75, 78, 83, 82, 83, 68, 73, 77, 82, 88, 94, 100, 80, 59, 39, 52, 64, 77, 60], "modelSnow": {"HRDPS": null, "GDPS": 0.6, "GFS": 0.0, "ECMWF": 0.0, "ICON": 0.0}, "modelMean": 0.1}, {"date": "Tue, Mar 3", "dayOfWeek": "Tuesday", "icon": "🌨️", "mtHigh": "0", "mtLow": "-4", "valHigh": "6", "valLow": "0", "snow": "6.5cm", "wind": "7 km/h SE", "summary": "Snow, 6.5cm snow", "freezing": "1900m", "am": {"temp": "-3°C", "wind": "6 km/h SE", "snow": "0.3cm", "sky": "Light snow"}, "pm": {"temp": "-2°C", "wind": "7 km/h S", "snow": "3.5cm", "sky": "Snow"}, "night": {"temp": "-1°C", "wind": "7 km/h S", "snow": "2.7cm", "sky": "Light snow"}, "valley": "A mix of sun and cloud. High 6. Rain or snow. Low plus 1.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Fresh snow (6.5cm) for good turns in sheltered terrain. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions. <br><strong>Terrain:</strong> Mixed terrain — gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "New storm slab forming with fresh snow loading. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [42, 25, 39, 54, 68, 68, 69, 69, 79, 90, 100, 100, 100, 100, 100, 100, 100, 100, 99, 99, 99, 100, 100, 100], "modelSnow": {"HRDPS": null, "GDPS": 3.5, "GFS": 0.3, "ECMWF": 0.1, "ICON": 6.5}, "modelMean": 2.6}, {"date": "Wed, Mar 4", "dayOfWeek": "Wednesday", "icon": "🌨️", "mtHigh": "1", "mtLow": "-2", "valHigh": "7", "valLow": "4", "snow": "5.2cm", "wind": "5 km/h S", "summary": "Light snow showers, 5.2cm snow", "freezing": "2054m", "am": {"temp": "-1°C", "wind": "4 km/h SE", "snow": "1.8cm", "sky": "Light snow"}, "pm": {"temp": "0°C", "wind": "5 km/h S", "snow": "2.2cm", "sky": "Light snow showers"}, "night": {"temp": "-1°C", "wind": "4 km/h SW", "snow": "0cm", "sky": "Overcast"}, "valley": "Periods of snow or rain. High plus 4. Cloudy with 70 percent chance of rain showers or flurries. Low minus 1.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Fresh snow (5.2cm) for good turns in sheltered terrain. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun. <br><strong>Elevation band:</strong> Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions. <br><strong>Terrain:</strong> Mixed terrain — gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "New storm slab forming with fresh snow loading. Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 99, 98, 97, 95, 92, 90, 88, 86, 84, 78, 73, 67, 68], "modelSnow": {"HRDPS": null, "GDPS": 9.1, "GFS": 1.2, "ECMWF": 8.7, "ICON": 5.2}, "modelMean": 6.0}, {"date": "Thu, Mar 5", "dayOfWeek": "Thursday", "icon": "🌨️", "mtHigh": "1", "mtLow": "-3", "valHigh": "7", "valLow": "2", "snow": "None", "wind": "6 km/h SW", "summary": "Light snow showers", "freezing": "2054m", "am": {"temp": "-3°C", "wind": "4 km/h S", "snow": "0cm", "sky": "Light snow showers"}, "pm": {"temp": "1°C", "wind": "6 km/h SW", "snow": "0cm", "sky": "Light snow showers"}, "night": {"temp": "-1°C", "wind": "6 km/h SE", "snow": "0cm", "sky": "Overcast"}, "valley": "Cloudy with 40 percent chance of flurries or rain showers. High plus 5.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. No new snow. Look for wind-sheltered aspects where soft snow remains. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun. <br><strong>Elevation band:</strong> Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions. <br><strong>Terrain:</strong> Mixed terrain — gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [69, 70, 75, 80, 85, 83, 81, 79, 82, 85, 88, 90, 91, 93, 78, 63, 48, 50, 53, 55, 64, 72, 81, 87], "modelSnow": {"HRDPS": null, "GDPS": 2.4, "GFS": 0.3, "ECMWF": 0.8, "ICON": 0.0}, "modelMean": 0.9}, {"date": "Fri, Mar 6", "dayOfWeek": "Friday", "icon": "🌨️", "mtHigh": "3", "mtLow": "-5", "valHigh": "6", "valLow": "-2", "snow": "2.6cm", "wind": "12 km/h SW", "summary": "Light snow showers, 2.6cm snow", "freezing": "2362m", "am": {"temp": "-2°C", "wind": "9 km/h W", "snow": "0.3cm", "sky": "Light snow showers"}, "pm": {"temp": "0°C", "wind": "12 km/h W", "snow": "0.5cm", "sky": "Light snow"}, "night": {"temp": "-5°C", "wind": "8 km/h W", "snow": "1.1cm", "sky": "Snow"}, "valley": "Valley: 6/-2°C, Snow", "metar": "METAR is a live observation — check on the day.", "backcountry": "Flat light likely in alpine. Favour treed terrain and lower-angle runs. Light snow (2.6cm). Existing surfaces refreshed. Warm temps — watch for wet loose on steep south-facing terrain in afternoon. Start early. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. South-facing aspects will soften in afternoon sun. <br><strong>Elevation band:</strong> Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions. <br><strong>Terrain:</strong> Mixed terrain — gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Start early — south aspects will deteriorate by early afternoon. Plan to be off steep solar aspects by 1pm. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [94, 100, 100, 100, 100, 96, 93, 89, 90, 92, 93, 75, 56, 38, 44, 56, 75, 100, 100, 100, 100, 100, 100, 100], "modelSnow": {"HRDPS": null, "GDPS": 15.5, "GFS": 3.9, "ECMWF": 6.9, "ICON": null}, "modelMean": 8.8}, {"date": "Sat, Mar 7", "dayOfWeek": "Saturday", "icon": "🌨️", "mtHigh": "-4", "mtLow": "-15", "valHigh": "5", "valLow": "-10", "snow": "0.5cm", "wind": "8 km/h NW", "summary": "Light snow, 0.5cm snow", "freezing": "1285m", "am": {"temp": "-8°C", "wind": "7 km/h W", "snow": "0cm", "sky": "Light drizzle"}, "pm": {"temp": "-5°C", "wind": "8 km/h W", "snow": "0cm", "sky": "Overcast"}, "night": {"temp": "-14°C", "wind": "7 km/h NE", "snow": "0cm", "sky": "Fog"}, "valley": "A mix of sun and cloud. High 6. UV index 2 or low. Cloudy periods. Low minus 2.", "metar": "METAR is a live observation — check on the day.", "backcountry": "Variable visibility through the day. Light snow (0.5cm). Existing surfaces refreshed. <br><strong>Aspect:</strong> Light winds — all aspects reasonable. <br><strong>Elevation band:</strong> Alpine: poor visibility likely — limited value above treeline. Treeline and below-treeline trees offer better conditions. <br><strong>Terrain:</strong> Mixed terrain — gladed trees offer variety and wind protection. <br><strong>Timing:</strong> Normal timing. Morning starts offer best snow surfaces before any afternoon warming. <br><strong>Sol Mountain lodge terrain:</strong> All elevation bands accessible from the lodge (1900m). Alpine bowls, treeline glades, and below-treeline trees within touring distance. Guides know the terrain intimately — discuss objectives at breakfast briefing.", "avyNote": "Persistent weak layers (Feb 13 surface hoar, Jan 28 crust) remain in the snowpack. Assess stability as you travel.", "hourlyClouds": [100, 100, 100, 100, 100, 100, 100, 100, 99, 98, 97, 98, 99, 100, 100, 100, 100, 81, 55, 35, 25, 22, 28, 49], "modelSnow": {"HRDPS": null, "GDPS": 7.1, "GFS": 0.5, "ECMWF": 11.6, "ICON": null}, "modelMean": 6.4}];
 
 function renderCards() {
   var c = document.getElementById("cards");

@@ -65,6 +65,10 @@ WMO = {
 def deg_to_compass(deg):
     if deg is None:
         return "--"
+    try:
+        deg = float(deg)
+    except (TypeError, ValueError):
+        return "--"
     dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
     return dirs[round(deg % 360 / 45) % 8]
 
@@ -707,10 +711,10 @@ def generate_html(days, metar, avy_data, ec_forecasts):
 <div class="container">
   <header>
     <h1>Sol Mountain Backcountry Ski Trip</h1>
-    <div class="dates">March 1 \\u2013 7, 2026</div>
+    <div class="dates">March 1 &ndash; 7, 2026</div>
     <div class="location-info">
       Monashee Mountains, ~50km north of Revelstoke, BC<br>
-      Lodge at ~1900m \\u00B7 Skiing to ~2500m
+      Lodge at ~1900m &middot; Skiing to ~2500m
     </div>
     <div class="avy-banner" style="border: 1px solid {banner['color']}40; background: {banner['color']}15; color: {banner['color']};">
       <span class="avy-dot" style="background: {banner['color']}"></span>
@@ -729,15 +733,15 @@ def generate_html(days, metar, avy_data, ec_forecasts):
     <h2>Live Data Sources</h2>
     <div class="link-grid">
       <a class="link-item" href="{html_esc(forecast_url)}" target="_blank" rel="noopener">
-        Avalanche Canada \\u2014 {html_esc(region_name)}
+        Avalanche Canada &mdash; {html_esc(region_name)}
         <small>Daily danger ratings &amp; snowpack analysis</small>
       </a>
       <a class="link-item" href="https://www.snow-forecast.com/resorts/Sol-Mountain-Touring/6day/mid" target="_blank" rel="noopener">
-        Snow-Forecast \\u2014 Sol Mountain
+        Snow-Forecast &mdash; Sol Mountain
         <small>6-day mountain forecast</small>
       </a>
       <a class="link-item" href="https://weather.gc.ca/city/pages/bc-65_metric_e.html" target="_blank" rel="noopener">
-        Environment Canada \\u2014 Revelstoke
+        Environment Canada &mdash; Revelstoke
         <small>Official valley forecast</small>
       </a>
       <a class="link-item" href="https://aviationweather.gov/api/data/metar?ids=CYRV&format=decoded" target="_blank" rel="noopener">
@@ -745,12 +749,16 @@ def generate_html(days, metar, avy_data, ec_forecasts):
         <small>Revelstoke airport obs</small>
       </a>
       <a class="link-item" href="https://solmountain.com/conditions/" target="_blank" rel="noopener">
-        Sol Mountain Lodge \\u2014 Conditions
+        Sol Mountain Lodge &mdash; Conditions
         <small>Current snowpack &amp; terrain report</small>
       </a>
       <a class="link-item" href="https://open-meteo.com/" target="_blank" rel="noopener">
         Open-Meteo API
         <small>Mountain &amp; valley forecast data source</small>
+      </a>
+      <a class="link-item" href="https://spotwx.com/products/grib_index.php?model=gem_lam_continental&lat=51.35&lon=-117.95&tz=America/Vancouver" target="_blank" rel="noopener">
+        SpotWX &mdash; Sol Mountain
+        <small>Multi-model point forecasts (HRDPS, RDPS, GFS, ECMWF)</small>
       </a>
     </div>
     <div class="last-updated">Last updated: {html_esc(now_str)}</div>

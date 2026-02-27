@@ -494,6 +494,226 @@ def gen_avy_notes(day, avy_data):
     return " ".join(notes)
 
 
+def gen_trip_planner(days, avy_data):
+    """Generate an ATAR-style trip planning section for each day."""
+    if not days:
+        return ""
+
+    product = avy_data.get("product") if avy_data else None
+    report = product.get("report") if product else None
+
+    # Build per-day danger ratings lookup
+    danger_by_date = {}
+    if report and report.get("dangerRatings"):
+        for dr in report["dangerRatings"]:
+            dval = dr.get("date", {}).get("value", "")[:10]
+            danger_by_date[dval] = {
+                "alp": dr.get("ratings", {}).get("alp", {}).get("rating", {}).get("display", "?"),
+                "tln": dr.get("ratings", {}).get("tln", {}).get("rating", {}).get("display", "?"),
+                "btl": dr.get("ratings", {}).get("btl", {}).get("rating", {}).get("display", "?"),
+            }
+
+    # Avalanche problems
+    problems_text = ""
+    if report and report.get("problems"):
+        prob_parts = []
+        for p in report["problems"]:
+            ptype = p.get("type", {}).get("display") or p.get("type", {}).get("value", "?")
+            raw_aspects = p.get("data", {}).get("aspects", [])
+            aspects = ", ".join(a.get("display", str(a)) if isinstance(a, dict) else str(a) for a in raw_aspects)
+            raw_elevs = p.get("data", {}).get("elevations", [])
+            elevs = ", ".join(e.get("display", str(e)) if isinstance(e, dict) else str(e) for e in raw_elevs)
+            prob_parts.append(f"{ptype} on {aspects} at {elevs}")
+        problems_text = ". ".join(prob_parts) + "."
+
+    day_tabs = []
+    day_panels = []
+
+    for i, d in enumerate(days):
+        date_str = d["date"]
+        date_fmt = d["date_fmt"]
+        day_name = d["day_of_week"]
+        snow = d["mountain"]["snow"]
+        wind = d["mountain"]["wind_max"]
+        wind_dir = d["mountain"]["wind_dir"]
+        high = d["mountain"]["high"]
+        low = d["mountain"]["low"]
+        cloud = d["avg_cloud"]
+        fl = d["freezing_level"]
+        desc = d["weather_desc"]
+
+        danger = danger_by_date.get(date_str, {})
+        alp = danger.get("alp", "Check avalanche.ca")
+        tln = danger.get("tln", "Check avalanche.ca")
+        btl = danger.get("btl", "Check avalanche.ca")
+
+        # Auto-generate weather summary
+        weather_parts = [desc + "."]
+        if snow > 0:
+            weather_parts.append(f"{snow}cm snow expected.")
+        if wind > 5:
+            weather_parts.append(f"{wind} km/h {wind_dir} ridgetop wind.")
+        weather_parts.append(f"Treeline temp ~{high}\u00B0C.")
+        weather_parts.append(f"Freezing level {fl}m.")
+        weather_summary = " ".join(weather_parts)
+
+        # Auto-generate red flags
+        red_flags = []
+        if snow > 10:
+            red_flags.append("Storm slab concern with significant new snow")
+        if snow > 3:
+            red_flags.append("New snow loading on existing weak layers")
+        if wind > 20:
+            lee = lee_aspects(wind_dir)
+            if lee:
+                red_flags.append(f"Wind loading on {', '.join(lee)} aspects")
+        if high > 0:
+            red_flags.append("Warm temps \u2014 watch for wet loose on solar aspects")
+        if cloud > 80:
+            red_flags.append("Poor visibility \u2014 limited ability to spot overhead hazards")
+        red_flags.append("Persistent weak layers (Feb 13 SH, Jan 28 crust)")
+        red_flags_text = ". ".join(red_flags) + "."
+
+        # Visibility-based notes
+        if cloud > 70:
+            vis_note = "Poor \u2014 flat light in alpine, limited ability to see terrain features"
+        elif cloud > 40:
+            vis_note = "Variable \u2014 periods of limited visibility possible"
+        else:
+            vis_note = "Good \u2014 clear conditions for alpine travel"
+
+        active = " active" if i == 0 else ""
+        day_tabs.append(
+            f'<button class="tp-tab{active}" onclick="showPlan({i})">'
+            f'{html_esc(day_name[:3])} {date_str[-2:]}</button>'
+        )
+
+        panel_display = "block" if i == 0 else "none"
+        day_panels.append(f'''
+        <div class="tp-panel" id="tp-panel-{i}" style="display:{panel_display}">
+          <div class="tp-day-header">{html_esc(date_fmt)} &mdash; {html_esc(day_name)}</div>
+
+          <div class="tp-category">
+            <div class="tp-cat-header">Avalanche Conditions</div>
+            <div class="tp-grid">
+              <div class="tp-row">
+                <span class="tp-label">Alpine</span>
+                <span class="tp-value tp-avy-rating">{html_esc(alp)}</span>
+              </div>
+              <div class="tp-row">
+                <span class="tp-label">Treeline</span>
+                <span class="tp-value tp-avy-rating">{html_esc(tln)}</span>
+              </div>
+              <div class="tp-row">
+                <span class="tp-label">Below treeline</span>
+                <span class="tp-value tp-avy-rating">{html_esc(btl)}</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Problem (type/aspect/elevation)</span>
+                <span class="tp-value">{html_esc(problems_text) if problems_text else "Check avalanche.ca for current problems."}</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Weather summary</span>
+                <span class="tp-value">{html_esc(weather_summary)}</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Visibility</span>
+                <span class="tp-value">{html_esc(vis_note)}</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Expected red flags</span>
+                <span class="tp-value tp-redflag">{html_esc(red_flags_text)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tp-category">
+            <div class="tp-cat-header">Group Plan</div>
+            <div class="tp-grid">
+              <div class="tp-row tp-full">
+                <span class="tp-label">Group objective</span>
+                <span class="tp-value tp-editable">&mdash;</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Communication plan</span>
+                <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Emergency plan</span>
+                <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tp-category">
+            <div class="tp-cat-header">Route Plan</div>
+            <div class="tp-grid">
+              <div class="tp-row tp-full">
+                <span class="tp-label">Ascent route</span>
+                <span class="tp-value tp-editable">&mdash;</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Descent route</span>
+                <span class="tp-value tp-editable">&mdash;</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Terrain features</span>
+                <span class="tp-value">Sol Mountain terrain: alpine bowls (2200-2500m), treeline glades, and below-treeline trees all accessible from lodge. Guides know local features &mdash; consult at morning briefing.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Safe zones</span>
+                <span class="tp-value">Local high points, tree islands, and dense timber. Lodge (1900m) is the primary safe zone.</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Decision points</span>
+                <span class="tp-value tp-editable">Define before departure: where will you reassess conditions and commitment?</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Bail out</span>
+                <span class="tp-value">Return to lodge via ascent route or alternate descent through trees.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tp-category">
+            <div class="tp-cat-header">Timing</div>
+            <div class="tp-grid">
+              <div class="tp-row">
+                <span class="tp-label">Departure</span>
+                <span class="tp-value tp-editable">&mdash;</span>
+              </div>
+              <div class="tp-row">
+                <span class="tp-label">Turnaround time</span>
+                <span class="tp-value tp-editable">&mdash;</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Timing plan</span>
+                <span class="tp-value tp-editable">&mdash;</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Elevation plan</span>
+                <span class="tp-value">Lodge at 1900m. Alpine objectives to ~2500m. Typical day: 600-900m vertical.</span>
+              </div>
+            </div>
+          </div>
+        </div>''')
+
+    tabs_html = "\n          ".join(day_tabs)
+    panels_html = "\n".join(day_panels)
+
+    return f'''
+    <div class="trip-planner-section">
+      <h2>Trip Planner (ATAR Framework)</h2>
+      <div class="tp-subtitle">Avalanche conditions auto-filled from forecast data. Fill in group, route, and timing plans at morning briefing.</div>
+      <div class="tp-tabs">
+        {tabs_html}
+      </div>
+      <div class="tp-panels">
+        {panels_html}
+      </div>
+    </div>'''
+
+
 def gen_multi_model_table(days, multi_model):
     """Generate HTML for the multi-model snowfall comparison table."""
     if not multi_model or not days:
@@ -838,6 +1058,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     banner = avy_banner(avy_data)
     outlook = gen_week_outlook(days, multi_model)
     multi_model_table = gen_multi_model_table(days, multi_model) if multi_model else ""
+    trip_planner = gen_trip_planner(days, avy_data)
     snowpack_evolution = gen_snowpack_evolution(days, multi_model)
     metar_str = fmt_metar(metar)
     now_str = datetime.now().strftime("%B %d, %Y at %H:%M")
@@ -1120,6 +1341,34 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .model-bar-label {{ width: 3.5rem; color: var(--text-muted); text-align: right; font-size: 0.72rem; }}
   .model-bar {{ height: 0.6rem; border-radius: 3px; background: var(--accent); min-width: 2px; transition: width 0.3s; }}
   .model-bar-val {{ color: var(--text-muted); font-size: 0.72rem; }}
+  .trip-planner-section {{
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.25rem; margin-bottom: 1.5rem;
+  }}
+  .trip-planner-section h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #fff; }}
+  .tp-subtitle {{ font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem; }}
+  .tp-tabs {{ display: flex; gap: 0.25rem; flex-wrap: wrap; margin-bottom: 1rem; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; }}
+  .tp-tab {{
+    background: transparent; border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text-muted); font-size: 0.8rem; padding: 0.35rem 0.7rem; cursor: pointer;
+    font-family: inherit; transition: all 0.2s;
+  }}
+  .tp-tab:hover {{ border-color: var(--accent); color: var(--text); }}
+  .tp-tab.active {{ background: var(--accent); color: #fff; border-color: var(--accent); font-weight: 600; }}
+  .tp-day-header {{ font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 0.75rem; }}
+  .tp-category {{ margin-bottom: 1rem; }}
+  .tp-cat-header {{
+    font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--accent); margin-bottom: 0.5rem; padding-bottom: 0.3rem; border-bottom: 1px solid var(--border);
+  }}
+  .tp-grid {{ display: flex; flex-direction: column; gap: 0.35rem; }}
+  .tp-row {{ display: flex; gap: 0.75rem; font-size: 0.84rem; line-height: 1.5; }}
+  .tp-row.tp-full {{ flex-direction: column; gap: 0.1rem; }}
+  .tp-label {{ color: var(--text-muted); font-size: 0.78rem; font-weight: 500; min-width: 8rem; flex-shrink: 0; }}
+  .tp-value {{ color: var(--text); }}
+  .tp-value.tp-editable {{ color: var(--text-muted); font-style: italic; }}
+  .tp-value.tp-avy-rating {{ font-weight: 600; }}
+  .tp-value.tp-redflag {{ color: var(--danger-considerable); }}
   footer {{ margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border); }}
   footer h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: #fff; }}
   .link-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem; margin-bottom: 1rem; }}
@@ -1169,6 +1418,8 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   {multi_model_table}
 
   <div id="cards"></div>
+
+  {trip_planner}
 
   {avy_html}
 
@@ -1266,6 +1517,12 @@ function renderCards() {{
   }}).join("");
 }}
 function toggle(card) {{ card.classList.toggle("expanded"); }}
+function showPlan(idx) {{
+  var tabs = document.querySelectorAll(".tp-tab");
+  var panels = document.querySelectorAll(".tp-panel");
+  tabs.forEach(function(t, i) {{ t.classList.toggle("active", i === idx); }});
+  panels.forEach(function(p, i) {{ p.style.display = i === idx ? "block" : "none"; }});
+}}
 renderCards();
 </script>
 </body>

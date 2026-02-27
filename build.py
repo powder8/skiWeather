@@ -1415,7 +1415,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;
   }}
   .cloud-chart {{ margin-bottom: 0.3rem; }}
-  .cloud-svg {{ width: 100%; max-width: 380px; height: auto; }}
+  .cloud-svg {{ width: 100%; height: auto; }}
   .cloud-chart-legend {{ display: flex; gap: 0.75rem; font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; }}
   .cloud-swatch {{ display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 0.2rem; }}
   .cloud-strip-section {{
@@ -1572,7 +1572,7 @@ function renderCards() {{
     // Cloud cover chart
     var cloudHtml = '';
     if (d.hourlyClouds && d.hourlyClouds.length === 24) {{
-      var cw = 380, ch = 120, cpad = {{l:32, r:10, t:8, b:22}};
+      var cw = 800, ch = 150, cpad = {{l:36, r:12, t:10, b:24}};
       var cpw = cw - cpad.l - cpad.r, cph = ch - cpad.t - cpad.b;
       var cpts = d.hourlyClouds.map(function(v, hi) {{
         return (cpad.l + hi * cpw / 23) + ',' + (cpad.t + cph - v * cph / 100);

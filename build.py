@@ -329,6 +329,21 @@ def process_day(date_str, mtn_data, val_data, multi_model=None):
     night = extract_hourly_period(mtn_data["hourly"], date_str, 18, 24)
     all_day = extract_hourly_period(mtn_data["hourly"], date_str, 6, 24)
     avg_cloud = all_day["cloud_avg"] if all_day else 50
+
+    # Extract full 24-hour cloud cover for charting
+    hourly_clouds = []
+    hourly_times = mtn_data["hourly"]["time"]
+    hourly_cc = mtn_data["hourly"]["cloudcover"]
+    for h in range(24):
+        target = f"{date_str}T{h:02d}:00"
+        found = False
+        for j, t in enumerate(hourly_times):
+            if t == target:
+                hourly_clouds.append(hourly_cc[j] if hourly_cc[j] is not None else 50)
+                found = True
+                break
+        if not found:
+            hourly_clouds.append(50)
     fl = freezing_level(mtn["high"], CONFIG["mountain"]["elev"])
 
     # Multi-model snowfall for this day
@@ -347,6 +362,7 @@ def process_day(date_str, mtn_data, val_data, multi_model=None):
         "valley": val,
         "am": am, "pm": pm, "night": night,
         "avg_cloud": avg_cloud,
+        "hourly_clouds": hourly_clouds,
         "freezing_level": fl,
         "model_snow": model_snow,
     }
@@ -798,6 +814,66 @@ def gen_multi_model_table(days, multi_model):
     </div>'''
 
 
+def gen_cloud_strip(days):
+    """Generate a week-at-a-glance cloud cover heatmap strip."""
+    if not days:
+        return ""
+
+    cell_w = 13
+    cell_h = 26
+    label_w = 52
+    w = label_w + 24 * cell_w + 4
+    h = len(days) * cell_h + 24  # +24 for hour labels at top
+
+    svg = f'<svg viewBox="0 0 {w} {h}" style="width:100%;max-width:{w}px;height:auto">'
+
+    # Hour labels at top
+    for hour in range(24):
+        x = label_w + hour * cell_w + cell_w / 2
+        svg += f'<text x="{x}" y="11" text-anchor="middle" fill="#8899aa" font-size="8">{hour}</text>'
+
+    for i, d in enumerate(days):
+        y = 18 + i * cell_h
+        # Day label
+        day_num = d["date"][-2:].lstrip("0")
+        dow = d["day_of_week"][:3]
+        label = f"{dow} {day_num}"
+        svg += (f'<text x="{label_w - 5}" y="{y + cell_h / 2 + 3}" text-anchor="end" '
+                f'fill="#e2e8f0" font-size="9" font-weight="500">{html_esc(label)}</text>')
+
+        clouds = d.get("hourly_clouds", [50] * 24)
+        for hour in range(24):
+            x = label_w + hour * cell_w
+            val = clouds[hour] if hour < len(clouds) else 50
+            # Color based on cloud cover band
+            if val < 30:
+                alpha = 0.12 + (val / 30) * 0.28
+                color = f'rgba(72,187,120,{alpha:.2f})'
+            elif val < 70:
+                alpha = 0.10 + ((val - 30) / 40) * 0.30
+                color = f'rgba(234,179,8,{alpha:.2f})'
+            else:
+                alpha = 0.20 + ((val - 70) / 30) * 0.45
+                color = f'rgba(156,163,175,{alpha:.2f})'
+
+            svg += (f'<rect x="{x}" y="{y}" width="{cell_w - 1}" '
+                    f'height="{cell_h - 2}" rx="2" fill="{color}"/>')
+
+    svg += '</svg>'
+
+    return f'''
+    <div class="cloud-strip-section">
+      <h2>Cloud Cover &mdash; Week at a Glance</h2>
+      <div class="cloud-strip-subtitle">Hourly cloud cover (%) &mdash; lower is better for visibility. Hours 0&ndash;23 local time.</div>
+      <div class="cloud-strip-wrap">{svg}</div>
+      <div class="cloud-strip-legend">
+        <span><span class="cloud-legend-swatch" style="background:rgba(72,187,120,0.35)"></span>Clear (&lt;30%)</span>
+        <span><span class="cloud-legend-swatch" style="background:rgba(234,179,8,0.3)"></span>Variable (30&ndash;70%)</span>
+        <span><span class="cloud-legend-swatch" style="background:rgba(156,163,175,0.5)"></span>Overcast (&gt;70%)</span>
+      </div>
+    </div>'''
+
+
 def gen_snowpack_evolution(days, multi_model=None):
     """Generate a narrative about how forecast weather affects snowpack stability."""
     parts = []
@@ -1058,6 +1134,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     banner = avy_banner(avy_data)
     outlook = gen_week_outlook(days, multi_model)
     multi_model_table = gen_multi_model_table(days, multi_model) if multi_model else ""
+    cloud_strip = gen_cloud_strip(days)
     trip_planner = gen_trip_planner(days, avy_data)
     snowpack_evolution = gen_snowpack_evolution(days, multi_model)
     metar_str = fmt_metar(metar)
@@ -1116,6 +1193,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
             "metar": metar_str if i == 0 else "METAR is a live observation \u2014 check on the day.",
             "backcountry": gen_backcountry(d),
             "avyNote": gen_avy_notes(d, avy_data),
+            "hourlyClouds": d.get("hourly_clouds", [50] * 24),
             "modelSnow": model_vals,
             "modelMean": model_mean,
         })
@@ -1336,6 +1414,23 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .mm-legend {{
     margin-top: 0.6rem; font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;
   }}
+  .cloud-chart {{ margin-bottom: 0.3rem; }}
+  .cloud-svg {{ width: 100%; max-width: 380px; height: auto; }}
+  .cloud-chart-legend {{ display: flex; gap: 0.75rem; font-size: 0.72rem; color: var(--text-muted); flex-wrap: wrap; }}
+  .cloud-swatch {{ display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; margin-right: 0.2rem; }}
+  .cloud-strip-section {{
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
+    padding: 1.25rem; margin-bottom: 1.5rem;
+  }}
+  .cloud-strip-section h2 {{ font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem; color: #fff; }}
+  .cloud-strip-subtitle {{ font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.75rem; }}
+  .cloud-strip-wrap {{ overflow-x: auto; -webkit-overflow-scrolling: touch; }}
+  .cloud-strip-legend {{
+    display: flex; gap: 1rem; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);
+  }}
+  .cloud-legend-swatch {{
+    display: inline-block; width: 12px; height: 12px; border-radius: 2px; vertical-align: middle; margin-right: 0.25rem;
+  }}
   .model-bars {{ display: flex; flex-direction: column; gap: 0.2rem; font-size: 0.78rem; }}
   .model-bar-row {{ display: flex; align-items: center; gap: 0.4rem; }}
   .model-bar-label {{ width: 3.5rem; color: var(--text-muted); text-align: right; font-size: 0.72rem; }}
@@ -1417,6 +1512,8 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
 
   {multi_model_table}
 
+  {cloud_strip}
+
   <div id="cards"></div>
 
   {trip_planner}
@@ -1472,6 +1569,44 @@ function renderCards() {{
       return '<div class="detail-cell"><div class="cell-label">'+label+'</div><div class="cell-value">'
         +p.sky+'<br>'+p.temp+', Wind '+p.wind+'<br>Snow: '+p.snow+'</div></div>';
     }}
+    // Cloud cover chart
+    var cloudHtml = '';
+    if (d.hourlyClouds && d.hourlyClouds.length === 24) {{
+      var cw = 380, ch = 120, cpad = {{l:32, r:10, t:8, b:22}};
+      var cpw = cw - cpad.l - cpad.r, cph = ch - cpad.t - cpad.b;
+      var cpts = d.hourlyClouds.map(function(v, hi) {{
+        return (cpad.l + hi * cpw / 23) + ',' + (cpad.t + cph - v * cph / 100);
+      }});
+      var carea = 'M' + cpad.l + ',' + (cpad.t + cph) + ' L' + cpts.join(' L') + ' L' + (cpad.l + cpw) + ',' + (cpad.t + cph) + ' Z';
+      var cy30 = cpad.t + cph - 30 * cph / 100;
+      var cy70 = cpad.t + cph - 70 * cph / 100;
+      var cs = '<svg viewBox="0 0 '+cw+' '+ch+'" class="cloud-svg">';
+      cs += '<rect x="'+cpad.l+'" y="'+cpad.t+'" width="'+cpw+'" height="'+(cy70-cpad.t)+'" fill="rgba(156,163,175,0.08)"/>';
+      cs += '<rect x="'+cpad.l+'" y="'+cy70+'" width="'+cpw+'" height="'+(cy30-cy70)+'" fill="rgba(234,179,8,0.05)"/>';
+      cs += '<rect x="'+cpad.l+'" y="'+cy30+'" width="'+cpw+'" height="'+(cpad.t+cph-cy30)+'" fill="rgba(72,187,120,0.05)"/>';
+      for (var gi=0; gi<24; gi+=3) {{
+        var gx = cpad.l + gi * cpw / 23;
+        cs += '<line x1="'+gx+'" y1="'+cpad.t+'" x2="'+gx+'" y2="'+(cpad.t+cph)+'" stroke="rgba(45,58,77,0.4)" stroke-width="0.5"/>';
+      }}
+      cs += '<line x1="'+cpad.l+'" y1="'+cy30+'" x2="'+(cpad.l+cpw)+'" y2="'+cy30+'" stroke="rgba(72,187,120,0.35)" stroke-dasharray="3,2"/>';
+      cs += '<line x1="'+cpad.l+'" y1="'+cy70+'" x2="'+(cpad.l+cpw)+'" y2="'+cy70+'" stroke="rgba(156,163,175,0.35)" stroke-dasharray="3,2"/>';
+      cs += '<path d="'+carea+'" fill="rgba(156,163,175,0.25)" stroke="rgba(200,210,220,0.6)" stroke-width="1.5" stroke-linejoin="round"/>';
+      cs += '<text x="'+(cpad.l-4)+'" y="'+(cy30+3)+'" text-anchor="end" fill="#8899aa" font-size="7.5">30%</text>';
+      cs += '<text x="'+(cpad.l-4)+'" y="'+(cy70+3)+'" text-anchor="end" fill="#8899aa" font-size="7.5">70%</text>';
+      cs += '<text x="'+(cpad.l-4)+'" y="'+(cpad.t+5)+'" text-anchor="end" fill="#8899aa" font-size="7.5">100</text>';
+      cs += '<text x="'+(cpad.l-4)+'" y="'+(cpad.t+cph)+'" text-anchor="end" fill="#8899aa" font-size="7.5">0%</text>';
+      for (var hi=0; hi<24; hi+=3) {{
+        var hx = cpad.l + hi * cpw / 23;
+        cs += '<text x="'+hx+'" y="'+(ch-4)+'" text-anchor="middle" fill="#8899aa" font-size="7.5">'+hi+'h</text>';
+      }}
+      cs += '</svg>';
+      cloudHtml = '<div class="detail-section"><h3>Cloud Cover</h3><div class="cloud-chart">' + cs + '</div>'
+        + '<div class="cloud-chart-legend">'
+        + '<span><span class="cloud-swatch" style="background:rgba(72,187,120,0.3)"></span>&lt;30% Clear</span>'
+        + '<span><span class="cloud-swatch" style="background:rgba(234,179,8,0.2)"></span>30\\u201370% Variable</span>'
+        + '<span><span class="cloud-swatch" style="background:rgba(156,163,175,0.3)"></span>&gt;70% Overcast</span>'
+        + '</div></div>';
+    }}
     // Model snowfall bars
     var modelHtml = '';
     if (d.modelSnow) {{
@@ -1508,6 +1643,7 @@ function renderCards() {{
       +'<div class="detail-section"><h3>Mountain Forecast (1900m)</h3>'
       +'<div class="detail-grid">'+pc('Morning',d.am)+pc('Afternoon',d.pm)+pc('Night',d.night)+'</div>'
       +'<div style="margin-top:0.4rem;font-size:0.82rem;color:var(--text-muted)">Freezing level: '+d.freezing+'</div></div>'
+      +cloudHtml
       +modelHtml
       +'<div class="detail-section"><h3>Valley Forecast (Revelstoke)</h3><div class="detail-text"><p>'+d.valley+'</p></div></div>'
       +'<div class="detail-section"><h3>Aviation Weather (CYRV)</h3><div class="detail-text"><p>'+d.metar+'</p></div></div>'

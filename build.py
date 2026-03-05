@@ -30,10 +30,9 @@ DIR = Path(__file__).parent
 CONFIG = {
     "mountain": {"lat": 50.45, "lon": -118.19, "elev": 1900, "name": "Sol Mountain (1900m)"},
     "valley": {"lat": 50.998, "lon": -118.195, "elev": 443, "name": "Revelstoke (443m)"},
-    "trip_start": "2026-03-01",
-    "trip_end": "2026-03-07",
+    "forecast_days": 10,
     "metar_station": "CYRV",
-    "ec_station": "s0000679",
+    "ec_station": "s0000259",
 }
 
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
@@ -93,14 +92,8 @@ def day_of_week(date_str):
 
 
 def trip_dates():
-    start = datetime.strptime(CONFIG["trip_start"], "%Y-%m-%d")
-    end = datetime.strptime(CONFIG["trip_end"], "%Y-%m-%d")
-    dates = []
-    d = start
-    while d <= end:
-        dates.append(d.strftime("%Y-%m-%d"))
-        d += timedelta(days=1)
-    return dates
+    today = datetime.now().date()
+    return [(today + timedelta(days=i)).strftime("%Y-%m-%d") for i in range(CONFIG["forecast_days"])]
 
 
 def strip_html(s):
@@ -189,7 +182,7 @@ def fetch_environment_canada():
         dir_url = f"https://dd.weather.gc.ca/today/citypage_weather/BC/{hh}/"
         try:
             html = fetch_text(dir_url, timeout=5)
-            m = re.search(r'href="([^"]*s0000679_en\.xml)"', html)
+            m = re.search(rf'href="([^"]*{CONFIG["ec_station"]}_en\.xml)"', html)
             if not m:
                 continue
             xml_text = fetch_text(dir_url + m.group(1), timeout=5)
@@ -557,7 +550,7 @@ def gen_avy_notes(day, avy_data):
     return " ".join(notes)
 
 
-def gen_trip_planner(days, avy_data):
+def gen_trip_planner(days, avy_data, forecast_url=""):
     """Generate a Daily Terrain Guide section for each day."""
     if not days:
         return ""
@@ -606,9 +599,9 @@ def gen_trip_planner(days, avy_data):
         desc = d["weather_desc"]
 
         danger = danger_by_date.get(date_str, {})
-        alp = danger.get("alp", "Check avalanche.ca")
-        tln = danger.get("tln", "Check avalanche.ca")
-        btl = danger.get("btl", "Check avalanche.ca")
+        alp = danger.get("alp", "No rating")
+        tln = danger.get("tln", "No rating")
+        btl = danger.get("btl", "No rating")
 
         # Auto-generate weather summary
         weather_parts = [desc + "."]
@@ -684,6 +677,18 @@ def gen_trip_planner(days, avy_data):
                 <span class="tp-label">Expected red flags</span>
                 <span class="tp-value tp-redflag">{html_esc(red_flags_text)}</span>
               </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Highlights</span>
+                <span class="tp-value">{html_esc(strip_html(report.get("highlights", ""))) if report and report.get("highlights") else "No highlights available."}</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Travel advice</span>
+                <span class="tp-value">{html_esc(". ".join(report.get("terrainAndTravelAdvice", []))) if report and report.get("terrainAndTravelAdvice") else "Check avalanche.ca for travel advice."}</span>
+              </div>
+              <div class="tp-row tp-full">
+                <span class="tp-label">Full forecast</span>
+                <span class="tp-value"><a href="{html_esc(forecast_url)}" target="_blank" rel="noopener" style="color:var(--accent-light)">Full forecast on avalanche.ca &rarr;</a></span>
+              </div>
             </div>
           </div>
 
@@ -713,47 +718,6 @@ def gen_trip_planner(days, avy_data):
             </div>
           </div>
 
-          <div class="tp-category">
-            <div class="tp-cat-header">Timing</div>
-            <div class="tp-grid">
-              <div class="tp-row">
-                <span class="tp-label">Departure</span>
-                <span class="tp-value">{html_esc(guidance["departure"])}</span>
-              </div>
-              <div class="tp-row">
-                <span class="tp-label">Turnaround time</span>
-                <span class="tp-value">{html_esc(guidance["turnaround"])}</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Timing rationale</span>
-                <span class="tp-value">{html_esc(guidance["timing_plan"])}</span>
-              </div>
-              <div class="tp-row tp-full">
-                <span class="tp-label">Elevation plan</span>
-                <span class="tp-value">Lodge at 1900m. Alpine objectives to ~2500m. Typical day: 600-900m vertical.</span>
-              </div>
-            </div>
-          </div>
-
-          <details class="tp-group-details">
-            <summary class="tp-group-summary">Group Plan (static reference)</summary>
-            <div class="tp-category" style="margin-top:0.5rem">
-              <div class="tp-grid">
-                <div class="tp-row tp-full">
-                  <span class="tp-label">Group objective</span>
-                  <span class="tp-value tp-editable">&mdash;</span>
-                </div>
-                <div class="tp-row tp-full">
-                  <span class="tp-label">Communication plan</span>
-                  <span class="tp-value">InReach + cell phones. Share plan with emergency contact before departure.</span>
-                </div>
-                <div class="tp-row tp-full">
-                  <span class="tp-label">Emergency plan</span>
-                  <span class="tp-value">Self rescue priority. InReach SOS for SAR activation. Sol Mountain lodge as base for coordination. Cell service unlikely in field.</span>
-                </div>
-              </div>
-            </div>
-          </details>
         </div>''')
 
     tabs_html = "\n          ".join(day_tabs)
@@ -1126,7 +1090,9 @@ def avy_banner(avy_data):
     product = avy_data.get("product") if avy_data else None
     report = product.get("report") if product else None
     if not report or not report.get("dangerRatings"):
-        return {"level": "?", "label": "Check avalanche.ca", "color": "var(--text-muted)"}
+        highlights = strip_html(report.get("highlights", "")) if report else ""
+        label = highlights if highlights else "Check avalanche.ca"
+        return {"level": "?", "label": label, "color": "var(--text-muted)"}
 
     levels = {"low": 1, "moderate": 2, "considerable": 3, "high": 4, "extreme": 5}
     colors = {
@@ -1177,10 +1143,20 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     outlook = gen_week_outlook(days, multi_model)
     multi_model_table = gen_multi_model_table(days, multi_model) if multi_model else ""
     cloud_strip = gen_cloud_strip(days)
-    trip_planner = gen_trip_planner(days, avy_data)
     snowpack_evolution = gen_snowpack_evolution(days, multi_model)
     metar_str = fmt_metar(metar)
     now_str = datetime.now().strftime("%B %d, %Y at %H:%M")
+
+    # Dynamic date range for title/header
+    if days:
+        first = datetime.strptime(days[0]["date"], "%Y-%m-%d")
+        last = datetime.strptime(days[-1]["date"], "%Y-%m-%d")
+        if first.month == last.month:
+            date_range_str = f"{MONTHS[first.month - 1]} {first.day} – {last.day}, {last.year}"
+        else:
+            date_range_str = f"{MONTHS[first.month - 1]} {first.day} – {MONTHS[last.month - 1]} {last.day}, {last.year}"
+    else:
+        date_range_str = ""
 
     product = avy_data.get("product") if avy_data else None
     report = product.get("report") if product else None
@@ -1197,6 +1173,8 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     if not forecast_url and avy_data and avy_data.get("region"):
         forecast_url = avy_data["region"].get("url", "")
     forecast_url = forecast_url or "https://www.avalanche.ca/en/forecasts"
+
+    trip_planner = gen_trip_planner(days, avy_data, forecast_url)
 
     # Build cards JSON
     cards = []
@@ -1329,7 +1307,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sol Mountain Backcountry Ski Trip \u2014 March 1\u20137, 2026</title>
+<title>Sol Mountain Backcountry Ski Trip \u2014 {html_esc(date_range_str)}</title>
 <style>
   :root {{
     --bg: #0b1120; --card-bg: rgba(22,33,52,0.65); --card-hover: rgba(28,42,64,0.75);
@@ -1532,17 +1510,6 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
   .tp-value.tp-editable {{ color: var(--text-muted); font-style: italic; }}
   .tp-value.tp-avy-rating {{ font-weight: 600; }}
   .tp-value.tp-redflag {{ color: var(--danger-considerable); }}
-  .tp-group-details {{ margin-top: 0.5rem; opacity: 0.7; transition: opacity var(--transition); }}
-  .tp-group-details[open] {{ opacity: 1; }}
-  .tp-group-summary {{
-    cursor: pointer; font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 0.05em; color: var(--text-muted); padding: 0.5rem 0; list-style: none;
-    display: flex; align-items: center; gap: 0.4rem; transition: color var(--transition);
-  }}
-  .tp-group-summary:hover {{ color: var(--text); }}
-  .tp-group-summary::-webkit-details-marker {{ display: none; }}
-  .tp-group-summary::before {{ content: '\u25B6'; font-size: 0.6rem; transition: transform var(--transition); }}
-  .tp-group-details[open] > .tp-group-summary::before {{ transform: rotate(90deg); }}
   footer {{ margin-top: 2rem; padding-top: 1.5rem; position: relative; }}
   footer::before {{
     content: ''; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
@@ -1578,7 +1545,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
     .avy-problems-grid {{ grid-template-columns: 1fr; }}
     .mm-table {{ font-size: 0.75rem; }}
     .mm-table th, .mm-table td {{ padding: 0.3rem 0.4rem; }}
-    .tp-category, .tp-group-details {{ padding-left: 0.25rem; padding-right: 0.25rem; }}
+    .tp-category {{ padding-left: 0.25rem; padding-right: 0.25rem; }}
   }}
 </style>
 </head>
@@ -1586,7 +1553,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
 <div class="container">
   <header>
     <h1>Sol Mountain Backcountry Ski Trip</h1>
-    <div class="dates">March 1 &ndash; 7, 2026</div>
+    <div class="dates">{html_esc(date_range_str)}</div>
     <div class="location-info">
       Monashee Mountains, ~60km south of Revelstoke, BC<br>
       Lodge at ~1900m &middot; Skiing to ~2500m
@@ -1621,8 +1588,8 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
         Snow-Forecast &mdash; Sol Mountain
         <small>6-day mountain forecast</small>
       </a>
-      <a class="link-item" href="https://weather.gc.ca/city/pages/bc-65_metric_e.html" target="_blank" rel="noopener">
-        Environment Canada &mdash; Revelstoke
+      <a class="link-item" href="https://weather.gc.ca/en/location/index.html?coords=50.241,-117.802" target="_blank" rel="noopener">
+        Environment Canada &mdash; Nakusp
         <small>Official valley forecast</small>
       </a>
       <a class="link-item" href="https://aviationweather.gov/api/data/metar?ids=CYRV&format=decoded" target="_blank" rel="noopener">
@@ -1637,7 +1604,7 @@ def generate_html(days, metar, avy_data, ec_forecasts, multi_model=None):
         Open-Meteo API
         <small>Mountain &amp; valley forecast data source</small>
       </a>
-      <a class="link-item" href="https://spotwx.com/products/grib_index.php?model=gem_lam_continental&lat=51.35&lon=-117.95&tz=America/Vancouver" target="_blank" rel="noopener">
+      <a class="link-item" href="https://spotwx.com/products/grib_index.php?model=gem_lam_continental&lat=50.45&lon=-118.19&tz=America/Vancouver" target="_blank" rel="noopener">
         SpotWX &mdash; Sol Mountain
         <small>Multi-model point forecasts (HRDPS, RDPS, GFS, ECMWF)</small>
       </a>
@@ -1735,7 +1702,7 @@ function renderCards() {{
       +'<div style="margin-top:0.4rem;font-size:0.82rem;color:var(--text-muted)">Freezing level: '+d.freezing+'</div></div>'
       +cloudHtml
       +modelHtml
-      +'<div class="detail-section"><h3>Valley Forecast (Revelstoke)</h3><div class="detail-text"><p>'+d.valley+'</p></div></div>'
+      +'<div class="detail-section"><h3>Valley Forecast (Nakusp)</h3><div class="detail-text"><p>'+d.valley+'</p></div></div>'
       +'<div class="detail-section"><h3>Aviation Weather (CYRV)</h3><div class="detail-text"><p>'+d.metar+'</p></div></div>'
       +'<div class="detail-section"><h3>Backcountry Notes</h3><div class="backcountry-note">'+d.backcountry+'</div></div>'
       +'<div class="detail-section"><h3>Avalanche Considerations</h3><div class="avy-note">'+d.avyNote+'</div></div>'

@@ -270,15 +270,15 @@
       "mountain": {
         "high": 0,
         "low": -6,
-        "precip": 5.2,
-        "snow": 2.5,
+        "precip": 5.0,
+        "snow": 2.4,
         "wind_max": 15,
         "wind_dir": "W",
         "weather_code": 73
       },
       "valley": {
         "high": 8,
-        "low": 1,
+        "low": 2,
         "snow": 1.5,
         "weather_code": 73
       },
@@ -305,14 +305,14 @@
       "night": {
         "temp_min": -5,
         "temp_max": -2,
-        "temp_avg": -4,
-        "snow_total": 0.4,
+        "temp_avg": -3,
+        "snow_total": 0.3,
         "wind_max": 15,
         "wind_dir": "NW",
-        "weather_code": 73,
-        "cloud_avg": 79
+        "weather_code": 71,
+        "cloud_avg": 100
       },
-      "avg_cloud": 86,
+      "avg_cloud": 93,
       "hourly_clouds": [
         99,
         100,
@@ -336,16 +336,16 @@
         100,
         100,
         100,
-        49,
-        27
+        100,
+        100
       ],
       "freezing_level": 1900,
       "model_snow": {
-        "HRDPS": 3.9,
-        "GDPS": 3.9,
-        "GFS": 2.5,
+        "HRDPS": 4.4,
+        "GDPS": 4.4,
+        "GFS": 2.4,
         "ECMWF": 5.5,
-        "ICON": 1.3
+        "ICON": 2.9
       }
     },
     "2026-03-05": {
@@ -353,18 +353,18 @@
       "date_fmt": "Thu, Mar 5",
       "day_of_week": "Thursday",
       "icon": "🌨️",
-      "weather_desc": "Heavy snow",
+      "weather_desc": "Snow",
       "mountain": {
         "high": -4,
         "low": -9,
-        "precip": 6.47,
-        "snow": 3.4,
-        "wind_max": 28,
+        "precip": 3.5,
+        "snow": 1.8,
+        "wind_max": 30,
         "wind_dir": "NW",
-        "weather_code": 75
+        "weather_code": 73
       },
       "valley": {
-        "high": 6,
+        "high": 7,
         "low": -2,
         "snow": 0.0,
         "weather_code": 3
@@ -373,21 +373,21 @@
         "temp_min": -5,
         "temp_max": -4,
         "temp_avg": -5,
-        "snow_total": 0.7,
-        "wind_max": 27,
+        "snow_total": 0.8,
+        "wind_max": 26,
         "wind_dir": "NW",
         "weather_code": 73,
-        "cloud_avg": 71
+        "cloud_avg": 83
       },
       "pm": {
         "temp_min": -6,
         "temp_max": -4,
         "temp_avg": -5,
         "snow_total": 0,
-        "wind_max": 28,
+        "wind_max": 30,
         "wind_dir": "NW",
-        "weather_code": 0,
-        "cloud_avg": 9
+        "weather_code": 1,
+        "cloud_avg": 12
       },
       "night": {
         "temp_min": -9,
@@ -399,22 +399,22 @@
         "weather_code": 3,
         "cloud_avg": 67
       },
-      "avg_cloud": 49,
+      "avg_cloud": 54,
       "hourly_clouds": [
-        13,
-        9,
-        36,
-        100,
-        100,
-        78,
+        3,
+        2,
+        5,
         100,
         100,
         100,
         100,
-        15,
-        9,
-        14,
-        14,
+        100,
+        100,
+        100,
+        57,
+        41,
+        16,
+        27,
         15,
         10,
         2,
@@ -426,13 +426,13 @@
         100,
         100
       ],
-      "freezing_level": 1131,
+      "freezing_level": 1285,
       "model_snow": {
-        "HRDPS": 4.0,
-        "GDPS": 4.0,
-        "GFS": 3.4,
+        "HRDPS": 2.4,
+        "GDPS": 2.4,
+        "GFS": 1.8,
         "ECMWF": 1.7,
-        "ICON": 0.6
+        "ICON": 0.5
       }
     },
     "2026-03-06": {
@@ -516,10 +516,10 @@
       "freezing_level": 1592,
       "model_snow": {
         "HRDPS": null,
-        "GDPS": 2.5,
+        "GDPS": 3.9,
         "GFS": 2.3,
         "ECMWF": 0.4,
-        "ICON": 0.3
+        "ICON": 1.0
       }
     },
     "2026-03-07": {
@@ -606,7 +606,7 @@
         "GDPS": 0.5,
         "GFS": 4.8,
         "ECMWF": 3.9,
-        "ICON": 0.8
+        "ICON": 0.4
       }
     },
     "2026-03-08": {
@@ -690,10 +690,10 @@
       "freezing_level": 1900,
       "model_snow": {
         "HRDPS": null,
-        "GDPS": 3.2,
+        "GDPS": 3.4,
         "GFS": 5.5,
         "ECMWF": 4.2,
-        "ICON": 9.6
+        "ICON": 2.7
       }
     },
     "2026-03-09": {
@@ -766,15 +766,11 @@
         100,
         100,
         100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
+        99,
+        98,
+        97,
+        98,
+        99,
         100,
         100
       ],
@@ -784,7 +780,7 @@
         "GDPS": 1.2,
         "GFS": 1.4,
         "ECMWF": 2.9,
-        "ICON": 2.9
+        "ICON": 3.1
       }
     },
     "2026-03-10": {
@@ -958,7 +954,7 @@
         "GDPS": 12.9,
         "GFS": 0.4,
         "ECMWF": 9.2,
-        "ICON": null
+        "ICON": 14.1
       }
     },
     "2026-03-12": {
@@ -1136,23 +1132,23 @@
       }
     }
   },
-  "lastUpdated": "2026-03-05T02:43:01.686622+00:00",
+  "lastUpdated": "2026-03-05T04:45:58.566593+00:00",
   "metar": {
     "icaoId": "CYRV",
-    "receiptTime": "2026-03-05T02:39:52.571Z",
-    "obsTime": 1772678280,
-    "reportTime": "2026-03-05T02:38:00.000Z",
-    "temp": 4,
-    "dewp": 4,
+    "receiptTime": "2026-03-05T04:44:22.806Z",
+    "obsTime": 1772685600,
+    "reportTime": "2026-03-05T04:40:00.000Z",
+    "temp": 3,
+    "dewp": 3,
     "wdir": 0,
     "wspd": 0,
-    "visib": 0.5,
-    "altim": 1009.2,
-    "slp": 1010.6,
+    "visib": 2.5,
+    "altim": 1010.2,
+    "slp": 1011.8,
     "qcField": 2,
-    "wxString": "-RA FG",
+    "wxString": "-RA BR",
     "metarType": "SPECI",
-    "rawOb": "SPECI CYRV 050238Z AUTO 00000KT 1/2SM -RA FG FEW001 BKN009 BKN017 OVC076 04/04 A2980 RMK SLP106",
+    "rawOb": "SPECI CYRV 050440Z AUTO 00000KT 2 1/2SM -RA BR FEW002 BKN010 OVC025 03/03 A2983 RMK VIS VRB 3/4-3 SLP118",
     "lat": 50.958,
     "lon": -118.176,
     "elev": 456,
@@ -1161,21 +1157,17 @@
     "clouds": [
       {
         "cover": "FEW",
-        "base": 100
+        "base": 200
       },
       {
         "cover": "BKN",
-        "base": 900
-      },
-      {
-        "cover": "BKN",
-        "base": 1700
+        "base": 1000
       },
       {
         "cover": "OVC",
-        "base": 7600
+        "base": 2500
       }
     ],
-    "fltCat": "LIFR"
+    "fltCat": "IFR"
   }
 }

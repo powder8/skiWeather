@@ -2,9 +2,8 @@ name: Update Forecast
 
 on:
   schedule:
-    # Run daily at 6 AM and 4 PM Pacific (14:00 and 00:00 UTC)
-    - cron: '0 14 * * *'
-    - cron: '0 0 * * *'
+    # Run every 2 days at 6 AM Pacific (14:00 UTC)
+    - cron: '0 14 */2 * *'
   workflow_dispatch: # Manual trigger from GitHub UI
 
 jobs:

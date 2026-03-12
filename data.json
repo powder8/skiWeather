@@ -964,51 +964,51 @@
       "icon": "🌨️",
       "weather_desc": "Heavy snow",
       "mountain": {
-        "high": -7,
-        "low": -15,
-        "precip": 13.77,
-        "snow": 7.0,
-        "wind_max": 38,
+        "high": -6,
+        "low": -14,
+        "precip": 9.1,
+        "snow": 4.6,
+        "wind_max": 43,
         "wind_dir": "NW",
         "weather_code": 75
       },
       "valley": {
-        "high": 2,
-        "low": -8,
-        "snow": 0.0,
-        "weather_code": 3
+        "high": 1,
+        "low": -7,
+        "snow": 0.8,
+        "weather_code": 75
       },
       "am": {
-        "temp_min": -11,
-        "temp_max": -10,
-        "temp_avg": -11,
-        "snow_total": 3.9,
-        "wind_max": 24,
-        "wind_dir": "NW",
-        "weather_code": 75,
+        "temp_min": -13,
+        "temp_max": -11,
+        "temp_avg": -12,
+        "snow_total": 0,
+        "wind_max": 28,
+        "wind_dir": "W",
+        "weather_code": 3,
         "cloud_avg": 100
       },
       "pm": {
-        "temp_min": -10,
-        "temp_max": -9,
-        "temp_avg": -9,
-        "snow_total": 2.0,
-        "wind_max": 23,
-        "wind_dir": "W",
-        "weather_code": 73,
-        "cloud_avg": 96
-      },
-      "night": {
-        "temp_min": -15,
-        "temp_max": -11,
-        "temp_avg": -13,
-        "snow_total": 0.4,
-        "wind_max": 19,
+        "temp_min": -11,
+        "temp_max": -10,
+        "temp_avg": -10,
+        "snow_total": 0.8,
+        "wind_max": 24,
         "wind_dir": "NW",
         "weather_code": 73,
         "cloud_avg": 100
       },
-      "avg_cloud": 99,
+      "night": {
+        "temp_min": -14,
+        "temp_max": -10,
+        "temp_avg": -13,
+        "snow_total": 1.5,
+        "wind_max": 12,
+        "wind_dir": "NW",
+        "weather_code": 73,
+        "cloud_avg": 100
+      },
+      "avg_cloud": 100,
       "hourly_clouds": [
         100,
         100,
@@ -1027,7 +1027,7 @@
         100,
         100,
         100,
-        75,
+        100,
         100,
         100,
         100,
@@ -1035,13 +1035,13 @@
         100,
         100
       ],
-      "freezing_level": 823,
+      "freezing_level": 977,
       "model_snow": {
-        "HRDPS": 7.6,
-        "GDPS": 7.6,
-        "GFS": 7.0,
-        "ECMWF": 4.3,
-        "ICON": 4.3
+        "HRDPS": 6.4,
+        "GDPS": 6.4,
+        "GFS": 4.6,
+        "ECMWF": 5.8,
+        "ICON": 3.3
       }
     },
     "2026-03-13": {
@@ -1052,54 +1052,51 @@
       "weather_desc": "Light snow showers",
       "mountain": {
         "high": -7,
-        "low": -18,
-        "precip": 1.4,
-        "snow": 0.6,
-        "wind_max": 14,
+        "low": -17,
+        "precip": 1.78,
+        "snow": 0.8,
+        "wind_max": 13,
         "wind_dir": "NW",
         "weather_code": 85
       },
       "valley": {
         "high": 2,
-        "low": -16,
-        "snow": 0.7,
-        "weather_code": 85
+        "low": -17,
+        "snow": 0.0,
+        "weather_code": 51
       },
       "am": {
-        "temp_min": -14,
-        "temp_max": -8,
-        "temp_avg": -12,
-        "snow_total": 0.3,
-        "wind_max": 5,
+        "temp_min": -15,
+        "temp_max": -9,
+        "temp_avg": -13,
+        "snow_total": 0.1,
+        "wind_max": 13,
         "wind_dir": "NW",
-        "weather_code": 85,
-        "cloud_avg": 100
+        "weather_code": 3,
+        "cloud_avg": 71
       },
       "pm": {
         "temp_min": -8,
         "temp_max": -7,
-        "temp_avg": -7,
+        "temp_avg": -8,
         "snow_total": 0.3,
-        "wind_max": 9,
+        "wind_max": 7,
         "wind_dir": "W",
         "weather_code": 85,
-        "cloud_avg": 94
+        "cloud_avg": 100
       },
       "night": {
-        "temp_min": -18,
+        "temp_min": -17,
         "temp_max": -9,
         "temp_avg": -15,
         "snow_total": 0,
         "wind_max": 8,
         "wind_dir": "NW",
-        "weather_code": 0,
-        "cloud_avg": 12
+        "weather_code": 51,
+        "cloud_avg": 29
       },
-      "avg_cloud": 69,
+      "avg_cloud": 67,
       "hourly_clouds": [
-        87,
-        23,
-        7,
         100,
         100,
         100,
@@ -1108,26 +1105,29 @@
         100,
         100,
         100,
+        95,
+        37,
+        58,
+        34,
         100,
         100,
         100,
         100,
         100,
         100,
-        63,
-        12,
-        12,
-        12,
-        12,
-        13,
-        14
+        95,
+        17,
+        15,
+        15,
+        16,
+        16
       ],
       "freezing_level": 823,
       "model_snow": {
         "HRDPS": null,
-        "GDPS": 0.3,
-        "GFS": 0.6,
-        "ECMWF": 1.8,
+        "GDPS": 1.9,
+        "GFS": 0.8,
+        "ECMWF": 0.6,
         "ICON": 0.0
       }
     },
@@ -1139,11 +1139,11 @@
       "weather_desc": "Light snow showers",
       "mountain": {
         "high": -8,
-        "low": -20,
-        "precip": 0.8,
+        "low": -19,
+        "precip": 1.0,
         "snow": 0.1,
-        "wind_max": 11,
-        "wind_dir": "W",
+        "wind_max": 12,
+        "wind_dir": "NW",
         "weather_code": 85
       },
       "valley": {
@@ -1153,69 +1153,69 @@
         "weather_code": 51
       },
       "am": {
-        "temp_min": -20,
-        "temp_max": -10,
+        "temp_min": -19,
+        "temp_max": -9,
         "temp_avg": -15,
-        "snow_total": 0.1,
-        "wind_max": 8,
-        "wind_dir": "NW",
-        "weather_code": 85,
-        "cloud_avg": 62
+        "snow_total": 0,
+        "wind_max": 7,
+        "wind_dir": "W",
+        "weather_code": 3,
+        "cloud_avg": 63
       },
       "pm": {
         "temp_min": -9,
         "temp_max": -8,
-        "temp_avg": -9,
-        "snow_total": 0,
-        "wind_max": 11,
+        "temp_avg": -8,
+        "snow_total": 0.1,
+        "wind_max": 12,
         "wind_dir": "W",
-        "weather_code": 51,
-        "cloud_avg": 68
+        "weather_code": 85,
+        "cloud_avg": 75
       },
       "night": {
-        "temp_min": -19,
-        "temp_max": -11,
-        "temp_avg": -16,
+        "temp_min": -18,
+        "temp_max": -10,
+        "temp_avg": -15,
         "snow_total": 0,
-        "wind_max": 8,
+        "wind_max": 9,
         "wind_dir": "NW",
-        "weather_code": 0,
-        "cloud_avg": 8
+        "weather_code": 51,
+        "cloud_avg": 64
       },
-      "avg_cloud": 46,
+      "avg_cloud": 67,
       "hourly_clouds": [
+        17,
+        17,
+        22,
         100,
         100,
         100,
         100,
         100,
-        100,
-        92,
-        18,
-        8,
-        60,
-        93,
-        100,
-        13,
+        46,
         61,
-        81,
+        15,
+        54,
+        7,
+        41,
         100,
         100,
-        53,
-        12,
-        11,
-        10,
-        5,
-        5,
-        5
+        100,
+        100,
+        96,
+        100,
+        56,
+        18,
+        93,
+        20
       ],
       "freezing_level": 669,
       "model_snow": {
         "HRDPS": null,
-        "GDPS": 1.0,
+        "GDPS": 0.6,
         "GFS": 0.1,
-        "ECMWF": 0.5,
-        "ICON": 0.5
+        "ECMWF": 0.2,
+        "ICON": 0.0
       }
     },
     "2026-03-15": {
@@ -1223,58 +1223,58 @@
       "date_fmt": "Sun, Mar 15",
       "day_of_week": "Sunday",
       "icon": "🌨️",
-      "weather_desc": "Heavy snow",
+      "weather_desc": "Snow",
       "mountain": {
-        "high": -10,
-        "low": -20,
-        "precip": 9.0,
-        "snow": 4.4,
+        "high": -8,
+        "low": -18,
+        "precip": 4.0,
+        "snow": 1.8,
         "wind_max": 8,
         "wind_dir": "SE",
-        "weather_code": 75
+        "weather_code": 73
       },
       "valley": {
-        "high": -1,
-        "low": -19,
-        "snow": 3.3,
-        "weather_code": 75
+        "high": 1,
+        "low": -18,
+        "snow": 1.5,
+        "weather_code": 73
       },
       "am": {
-        "temp_min": -19,
-        "temp_max": -13,
-        "temp_avg": -16,
+        "temp_min": -18,
+        "temp_max": -11,
+        "temp_avg": -15,
         "snow_total": 0,
-        "wind_max": 7,
+        "wind_max": 6,
         "wind_dir": "SE",
         "weather_code": 3,
         "cloud_avg": 100
       },
       "pm": {
-        "temp_min": -12,
-        "temp_max": -10,
-        "temp_avg": -11,
-        "snow_total": 0.3,
+        "temp_min": -10,
+        "temp_max": -8,
+        "temp_avg": -9,
+        "snow_total": 0.1,
         "wind_max": 8,
         "wind_dir": "SE",
-        "weather_code": 73,
+        "weather_code": 71,
         "cloud_avg": 100
       },
       "night": {
-        "temp_min": -11,
+        "temp_min": -10,
         "temp_max": -10,
         "temp_avg": -10,
-        "snow_total": 4.1,
-        "wind_max": 8,
+        "snow_total": 1.8,
+        "wind_max": 7,
         "wind_dir": "SE",
-        "weather_code": 75,
+        "weather_code": 73,
         "cloud_avg": 100
       },
       "avg_cloud": 100,
       "hourly_clouds": [
         11,
-        14,
-        87,
-        60,
+        89,
+        84,
+        100,
         100,
         100,
         100,
@@ -1296,13 +1296,13 @@
         100,
         100
       ],
-      "freezing_level": 362,
+      "freezing_level": 669,
       "model_snow": {
         "HRDPS": null,
-        "GDPS": 0.8,
-        "GFS": 4.4,
-        "ECMWF": 1.1,
-        "ICON": 1.1
+        "GDPS": 2.1,
+        "GFS": 1.8,
+        "ECMWF": 2.8,
+        "ICON": 0.2
       }
     },
     "2026-03-16": {
@@ -1314,46 +1314,46 @@
       "mountain": {
         "high": -3,
         "low": -10,
-        "precip": 5.1,
-        "snow": 2.3,
+        "precip": 13.2,
+        "snow": 6.1,
         "wind_max": 7,
         "wind_dir": "SE",
         "weather_code": 73
       },
       "valley": {
-        "high": 5,
+        "high": 6,
         "low": -2,
-        "snow": 4.0,
+        "snow": 6.4,
         "weather_code": 73
       },
       "am": {
         "temp_min": -10,
         "temp_max": -6,
-        "temp_avg": -9,
-        "snow_total": 0.6,
-        "wind_max": 5,
+        "temp_avg": -8,
+        "snow_total": 1.5,
+        "wind_max": 6,
         "wind_dir": "SE",
-        "weather_code": 71,
+        "weather_code": 73,
         "cloud_avg": 100
       },
       "pm": {
-        "temp_min": -6,
-        "temp_max": -4,
-        "temp_avg": -5,
-        "snow_total": 0.2,
+        "temp_min": -5,
+        "temp_max": -3,
+        "temp_avg": -4,
+        "snow_total": 0.6,
         "wind_max": 7,
         "wind_dir": "SE",
         "weather_code": 71,
         "cloud_avg": 100
       },
       "night": {
-        "temp_min": -4,
+        "temp_min": -3,
         "temp_max": -3,
         "temp_avg": -3,
-        "snow_total": 0,
-        "wind_max": 6,
-        "wind_dir": "SE",
-        "weather_code": 51,
+        "snow_total": 0.4,
+        "wind_max": 5,
+        "wind_dir": "S",
+        "weather_code": 71,
         "cloud_avg": 100
       },
       "avg_cloud": 100,
@@ -1386,127 +1386,40 @@
       "freezing_level": 1438,
       "model_snow": {
         "HRDPS": null,
-        "GDPS": 24.8,
-        "GFS": 2.3,
-        "ECMWF": 14.2,
-        "ICON": 11.4
+        "GDPS": 18.9,
+        "GFS": 6.1,
+        "ECMWF": 19.4,
+        "ICON": 8.0
       }
     },
     "2026-03-17": {
       "date": "2026-03-17",
       "date_fmt": "Tue, Mar 17",
       "day_of_week": "Tuesday",
-      "icon": "🌧️",
-      "weather_desc": "Light drizzle",
-      "mountain": {
-        "high": -1,
-        "low": -3,
-        "precip": 0.9,
-        "snow": 0.0,
-        "wind_max": 4,
-        "wind_dir": "SE",
-        "weather_code": 51
-      },
-      "valley": {
-        "high": 7,
-        "low": 6,
-        "snow": 0.0,
-        "weather_code": 51
-      },
-      "am": {
-        "temp_min": -3,
-        "temp_max": -2,
-        "temp_avg": -2,
-        "snow_total": 0,
-        "wind_max": 4,
-        "wind_dir": "SE",
-        "weather_code": 51,
-        "cloud_avg": 100
-      },
-      "pm": {
-        "temp_min": -2,
-        "temp_max": -1,
-        "temp_avg": -1,
-        "snow_total": 0,
-        "wind_max": 4,
-        "wind_dir": "S",
-        "weather_code": 45,
-        "cloud_avg": 100
-      },
-      "night": {
-        "temp_min": -2,
-        "temp_max": -2,
-        "temp_avg": -2,
-        "snow_total": 0,
-        "wind_max": 4,
-        "wind_dir": "SE",
-        "weather_code": 51,
-        "cloud_avg": 100
-      },
-      "avg_cloud": 100,
-      "hourly_clouds": [
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100
-      ],
-      "freezing_level": 1746,
-      "model_snow": {
-        "HRDPS": null,
-        "GDPS": 0.0,
-        "GFS": 0.0,
-        "ECMWF": 8.8,
-        "ICON": 0.0
-      }
-    },
-    "2026-03-18": {
-      "date": "2026-03-18",
-      "date_fmt": "Wed, Mar 18",
-      "day_of_week": "Wednesday",
       "icon": "🌫️",
       "weather_desc": "Fog",
       "mountain": {
         "high": -2,
-        "low": -3,
+        "low": -5,
         "precip": 0.0,
         "snow": 0.0,
         "wind_max": 7,
-        "wind_dir": "E",
+        "wind_dir": "SE",
         "weather_code": 45
       },
       "valley": {
-        "high": 7,
-        "low": 6,
+        "high": 6,
+        "low": 4,
         "snow": 0.0,
         "weather_code": 45
       },
       "am": {
-        "temp_min": -2,
+        "temp_min": -4,
         "temp_max": -2,
-        "temp_avg": -2,
+        "temp_avg": -3,
         "snow_total": 0,
         "wind_max": 6,
-        "wind_dir": "E",
+        "wind_dir": "SE",
         "weather_code": 45,
         "cloud_avg": 100
       },
@@ -1560,9 +1473,96 @@
       "freezing_level": 1592,
       "model_snow": {
         "HRDPS": null,
+        "GDPS": 1.1,
+        "GFS": 0.0,
+        "ECMWF": 8.7,
+        "ICON": 0.0
+      }
+    },
+    "2026-03-18": {
+      "date": "2026-03-18",
+      "date_fmt": "Wed, Mar 18",
+      "day_of_week": "Wednesday",
+      "icon": "🌧️",
+      "weather_desc": "Light drizzle",
+      "mountain": {
+        "high": -2,
+        "low": -3,
+        "precip": 0.6,
+        "snow": 0.0,
+        "wind_max": 6,
+        "wind_dir": "E",
+        "weather_code": 51
+      },
+      "valley": {
+        "high": 7,
+        "low": 6,
+        "snow": 0.0,
+        "weather_code": 51
+      },
+      "am": {
+        "temp_min": -3,
+        "temp_max": -2,
+        "temp_avg": -2,
+        "snow_total": 0,
+        "wind_max": 5,
+        "wind_dir": "E",
+        "weather_code": 45,
+        "cloud_avg": 100
+      },
+      "pm": {
+        "temp_min": -2,
+        "temp_max": -2,
+        "temp_avg": -2,
+        "snow_total": 0,
+        "wind_max": 6,
+        "wind_dir": "SE",
+        "weather_code": 45,
+        "cloud_avg": 100
+      },
+      "night": {
+        "temp_min": -2,
+        "temp_max": -2,
+        "temp_avg": -2,
+        "snow_total": 0,
+        "wind_max": 4,
+        "wind_dir": "E",
+        "weather_code": 51,
+        "cloud_avg": 100
+      },
+      "avg_cloud": 100,
+      "hourly_clouds": [
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "freezing_level": 1592,
+      "model_snow": {
+        "HRDPS": null,
         "GDPS": 0.0,
         "GFS": 0.0,
-        "ECMWF": 1.3,
+        "ECMWF": 0.2,
         "ICON": null
       }
     },
@@ -1571,30 +1571,30 @@
       "date_fmt": "Thu, Mar 19",
       "day_of_week": "Thursday",
       "icon": "🌧️",
-      "weather_desc": "Light drizzle",
+      "weather_desc": "Drizzle",
       "mountain": {
         "high": -1,
         "low": -2,
-        "precip": 0.3,
+        "precip": 4.2,
         "snow": 0.0,
-        "wind_max": 8,
+        "wind_max": 7,
         "wind_dir": "SE",
-        "weather_code": 51
+        "weather_code": 53
       },
       "valley": {
         "high": 7,
         "low": 6,
         "snow": 0.0,
-        "weather_code": 51
+        "weather_code": 53
       },
       "am": {
         "temp_min": -2,
-        "temp_max": -2,
+        "temp_max": -1,
         "temp_avg": -2,
         "snow_total": 0,
-        "wind_max": 8,
+        "wind_max": 6,
         "wind_dir": "E",
-        "weather_code": 45,
+        "weather_code": 51,
         "cloud_avg": 100
       },
       "pm": {
@@ -1602,9 +1602,9 @@
         "temp_max": -1,
         "temp_avg": -1,
         "snow_total": 0,
-        "wind_max": 6,
-        "wind_dir": "E",
-        "weather_code": 45,
+        "wind_max": 7,
+        "wind_dir": "SE",
+        "weather_code": 51,
         "cloud_avg": 100
       },
       "night": {
@@ -1612,8 +1612,8 @@
         "temp_max": -1,
         "temp_avg": -1,
         "snow_total": 0,
-        "wind_max": 6,
-        "wind_dir": "W",
+        "wind_max": 4,
+        "wind_dir": "S",
         "weather_code": 51,
         "cloud_avg": 100
       },
@@ -1647,9 +1647,9 @@
       "freezing_level": 1746,
       "model_snow": {
         "HRDPS": null,
-        "GDPS": 2.9,
+        "GDPS": 4.2,
         "GFS": 0.0,
-        "ECMWF": 0.1,
+        "ECMWF": 1.3,
         "ICON": null
       }
     },
@@ -1657,54 +1657,54 @@
       "date": "2026-03-20",
       "date_fmt": "Fri, Mar 20",
       "day_of_week": "Friday",
-      "icon": "🌫️",
-      "weather_desc": "Fog",
+      "icon": "🌨️",
+      "weather_desc": "Light snow showers",
       "mountain": {
-        "high": -2,
-        "low": -6,
-        "precip": 0.0,
-        "snow": 0.0,
-        "wind_max": 8,
+        "high": -1,
+        "low": -12,
+        "precip": 2.1,
+        "snow": 0.6,
+        "wind_max": 16,
         "wind_dir": "W",
-        "weather_code": 45
+        "weather_code": 85
       },
       "valley": {
-        "high": 6,
-        "low": -2,
+        "high": 7,
+        "low": -6,
         "snow": 0.0,
-        "weather_code": 45
+        "weather_code": 51
       },
       "am": {
+        "temp_min": -4,
+        "temp_max": -2,
+        "temp_avg": -3,
+        "snow_total": 0.4,
+        "wind_max": 16,
+        "wind_dir": "W",
+        "weather_code": 85,
+        "cloud_avg": 88
+      },
+      "pm": {
         "temp_min": -3,
         "temp_max": -2,
         "temp_avg": -3,
-        "snow_total": 0,
-        "wind_max": 8,
+        "snow_total": 0.2,
+        "wind_max": 13,
         "wind_dir": "W",
-        "weather_code": 45,
-        "cloud_avg": 100
-      },
-      "pm": {
-        "temp_min": -2,
-        "temp_max": -2,
-        "temp_avg": -2,
-        "snow_total": 0,
-        "wind_max": 8,
-        "wind_dir": "W",
-        "weather_code": 3,
-        "cloud_avg": 100
+        "weather_code": 85,
+        "cloud_avg": 53
       },
       "night": {
-        "temp_min": -6,
-        "temp_max": -3,
-        "temp_avg": -5,
+        "temp_min": -12,
+        "temp_max": -5,
+        "temp_avg": -9,
         "snow_total": 0,
-        "wind_max": 6,
-        "wind_dir": "NW",
+        "wind_max": 8,
+        "wind_dir": "W",
         "weather_code": 3,
-        "cloud_avg": 100
+        "cloud_avg": 84
       },
-      "avg_cloud": 100,
+      "avg_cloud": 75,
       "hourly_clouds": [
         100,
         100,
@@ -1715,71 +1715,147 @@
         100,
         100,
         100,
+        89,
+        75,
+        63,
+        57,
+        54,
+        52,
+        50,
+        50,
+        54,
+        69,
+        89,
         100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100,
-        100
+        95,
+        81,
+        68
       ],
-      "freezing_level": 1592,
+      "freezing_level": 1746,
+      "model_snow": {
+        "HRDPS": null,
+        "GDPS": 0.0,
+        "GFS": 0.6,
+        "ECMWF": 0.0,
+        "ICON": null
+      }
+    },
+    "2026-03-21": {
+      "date": "2026-03-21",
+      "date_fmt": "Sat, Mar 21",
+      "day_of_week": "Saturday",
+      "icon": "🌨️",
+      "weather_desc": "Light snow",
+      "mountain": {
+        "high": -6,
+        "low": -14,
+        "precip": 1.2,
+        "snow": 0.2,
+        "wind_max": 15,
+        "wind_dir": "W",
+        "weather_code": 71
+      },
+      "valley": {
+        "high": 3,
+        "low": -10,
+        "snow": 0.6,
+        "weather_code": 85
+      },
+      "am": {
+        "temp_min": -9,
+        "temp_max": -8,
+        "temp_avg": -9,
+        "snow_total": 0.2,
+        "wind_max": 12,
+        "wind_dir": "W",
+        "weather_code": 71,
+        "cloud_avg": 100
+      },
+      "pm": {
+        "temp_min": -7,
+        "temp_max": -6,
+        "temp_avg": -7,
+        "snow_total": 0,
+        "wind_max": 15,
+        "wind_dir": "SW",
+        "weather_code": 51,
+        "cloud_avg": 92
+      },
+      "night": {
+        "temp_min": -14,
+        "temp_max": -9,
+        "temp_avg": -13,
+        "snow_total": 0,
+        "wind_max": 12,
+        "wind_dir": "W",
+        "weather_code": 2,
+        "cloud_avg": 60
+      },
+      "avg_cloud": 84,
+      "hourly_clouds": [
+        54,
+        40,
+        37,
+        53,
+        80,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        93,
+        83,
+        75,
+        73,
+        73,
+        70,
+        59,
+        44,
+        40
+      ],
+      "freezing_level": 977,
       "model_snow": {
         "HRDPS": null,
         "GDPS": null,
-        "GFS": 0.0,
-        "ECMWF": 0.0,
+        "GFS": 0.2,
+        "ECMWF": 0.1,
         "ICON": null
       }
     }
   },
-  "lastUpdated": "2026-03-11T14:51:10.783727+00:00",
+  "lastUpdated": "2026-03-12T01:23:09.787603+00:00",
   "metar": {
     "icaoId": "CYRV",
-    "receiptTime": "2026-03-11T14:07:46.764Z",
-    "obsTime": 1773237900,
-    "reportTime": "2026-03-11T14:05:00.000Z",
-    "temp": -1,
-    "dewp": -2,
-    "wdir": "VRB",
-    "wspd": 5,
-    "visib": 9,
-    "altim": 1018.7,
-    "slp": 1020.7,
+    "receiptTime": "2026-03-12T01:08:24.225Z",
+    "obsTime": 1773277200,
+    "reportTime": "2026-03-12T01:00:00.000Z",
+    "temp": 0,
+    "dewp": 0,
+    "wdir": 140,
+    "wspd": 4,
+    "visib": 1.25,
+    "altim": 1008.9,
+    "slp": 1010.7,
     "qcField": 2,
-    "metarType": "SPECI",
-    "rawOb": "SPECI CYRV 111405Z AUTO VRB05KT 9SM FEW081 BKN098 BKN150 BKN170 M01/M02 A3008 RMK ICE INTMT SLP207",
+    "wxString": "-SN",
+    "metarType": "METAR",
+    "rawOb": "METAR CYRV 120100Z AUTO 14004KT 050V150 1 1/4SM -SN OVC005 00/M00 A2979 RMK ICE PCPN 0.8MM PAST HR SLP107",
     "lat": 50.958,
     "lon": -118.176,
     "elev": 456,
     "name": "Revelstoke Arpt, BC, CA",
-    "cover": "BKN",
+    "cover": "OVC",
     "clouds": [
       {
-        "cover": "FEW",
-        "base": 8100
-      },
-      {
-        "cover": "BKN",
-        "base": 9800
-      },
-      {
-        "cover": "BKN",
-        "base": 15000
-      },
-      {
-        "cover": "BKN",
-        "base": 17000
+        "cover": "OVC",
+        "base": 500
       }
     ],
-    "fltCat": "VFR"
+    "fltCat": "IFR"
   }
 }
